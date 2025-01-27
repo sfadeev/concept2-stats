@@ -1,4 +1,4 @@
-namespace C2Stats.Services
+namespace Concept2Stats.Services
 {
 	// todo: reuse from dddns-updater
 	public interface IConfigOptions

@@ -1,6 +1,6 @@
-using C2Stats.Models;
+using Concept2Stats.Models;
 
-namespace C2Stats.Services
+namespace Concept2Stats.Services
 {
 	public interface IWodDownloader
 	{

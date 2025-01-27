@@ -1,7 +1,7 @@
-using C2Stats.Models;
+using Concept2Stats.Models;
 using Microsoft.Extensions.Options;
 
-namespace C2Stats.Services
+namespace Concept2Stats.Services
 {
 	// todo: reuse from dddns-updater
 	public class BackgroundMessenger(ILogger<BackgroundMessenger> logger, IOptions<AppOptions> appOptions,

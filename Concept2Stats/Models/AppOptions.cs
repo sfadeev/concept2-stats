@@ -1,6 +1,6 @@
-using C2Stats.Services;
+using Concept2Stats.Services;
 
-namespace C2Stats.Models
+namespace Concept2Stats.Models
 {
 	public class AppOptions : IConfigOptions
 	{

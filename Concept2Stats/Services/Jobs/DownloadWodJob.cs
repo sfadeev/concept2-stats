@@ -1,10 +1,10 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using C2Stats.Models;
+using Concept2Stats.Models;
 using Microsoft.Extensions.Options;
 using Quartz;
 
-namespace C2Stats.Services.Jobs
+namespace Concept2Stats.Services.Jobs
 {
 	[DisallowConcurrentExecution]
 	public class DownloadWodJob(ILogger<DownloadWodJob> logger,

@@ -1,11 +1,11 @@
-using C2Stats.Models;
-using C2Stats.Services;
-using C2Stats.Services.Jobs;
+using Concept2Stats.Models;
+using Concept2Stats.Services;
+using Concept2Stats.Services.Jobs;
 using Quartz;
 using Serilog;
 using Serilog.Extensions.Logging;
 
-namespace C2Stats
+namespace Concept2Stats
 {
 	public abstract class Program
 	{

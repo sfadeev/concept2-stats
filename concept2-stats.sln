@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "C2Stats.Tests", "C2Stats.Tests\C2Stats.Tests.csproj", "{8782E23F-7D4A-460D-91E7-EE8888AAF758}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concept2Stats.Tests", "Concept2Stats.Tests\Concept2Stats.Tests.csproj", "{8782E23F-7D4A-460D-91E7-EE8888AAF758}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "C2Stats", "C2Stats\C2Stats.csproj", "{C4034DA1-7022-4946-85B5-C34A177FA843}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Concept2Stats", "Concept2Stats\Concept2Stats.csproj", "{C4034DA1-7022-4946-85B5-C34A177FA843}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{5D41DCA2-0067-4A0D-BE58-7699EA5EAC81}"
 EndProject

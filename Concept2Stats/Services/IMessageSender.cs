@@ -2,7 +2,7 @@ using System.Reflection;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
 
-namespace C2Stats.Services
+namespace Concept2Stats.Services
 {
 	public interface IMessageSender
 	{

@@ -1,7 +1,7 @@
-﻿using C2Stats.Models;
-using C2Stats.Services;
+﻿using Concept2Stats.Models;
+using Concept2Stats.Services;
 
-namespace C2Stats.Tests.Services
+namespace Concept2Stats.Tests.Services
 {
 	public class WodParserTests
 	{

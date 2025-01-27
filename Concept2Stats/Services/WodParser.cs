@@ -1,9 +1,9 @@
 using System.Globalization;
 using System.Web;
-using C2Stats.Models;
+using Concept2Stats.Models;
 using HtmlAgilityPack;
 
-namespace C2Stats.Services
+namespace Concept2Stats.Services
 {
 	public interface IWodParser
 	{

@@ -1,4 +1,4 @@
-namespace C2Stats.Models
+namespace Concept2Stats.Models
 {
 	public static class Messages
 	{
