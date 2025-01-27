@@ -12,7 +12,8 @@ namespace Concept2Stats.Services
 	
 	public class WodParser : IWodParser
 	{
-		private static readonly CultureInfo CultureInfo = CultureInfo.GetCultureInfo("us");
+		private static readonly CultureInfo CultureInfo = CultureInfo.InvariantCulture;
+		
 		private static readonly string[] TimeSpanFormats = [ @"m\:ss\.f" ];
 
 		public WodResult Parse(string html)

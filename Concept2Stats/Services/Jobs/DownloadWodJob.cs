@@ -23,9 +23,14 @@ namespace Concept2Stats.Services.Jobs
 	
 	[DisallowConcurrentExecution]
 	public class DownloadWodArchiveJob(ILogger<DownloadWodJob> logger, IOptions<AppOptions> appOptions,
-		IHealthcheckService healthcheckService, IMessageSender messageSender,
-		IWodDownloader wodDownloader) : IJob
+		IHealthcheckService healthcheckService, IWodDownloader wodDownloader) : IJob
 	{
+		public static readonly DateOnly FirstWodDate = new(2022, 7, 8); // Jul 8 2022 is the date of first WoD
+
+		public static readonly string[] DownloadedWodTypes = [ WodType.RowErg ];
+		
+		public static readonly int MaxErrorsCount = 10;
+		
 		private static readonly JsonSerializerOptions JsonOptions = new()
 		{
 			WriteIndented = true,
@@ -40,47 +45,62 @@ namespace Concept2Stats.Services.Jobs
 		private async Task ExecuteAsync(CancellationToken cancellationToken)
 		{
 			await healthcheckService.Success(cancellationToken);
-
-			var options = appOptions.Value;
-
-			var beginDate = DateOnly.FromDateTime(DateTime.Now);
-			var endDate = new DateOnly(2024, 1, 1);
-
-			var wodType = WodType.RowErg;
-			var now = beginDate;
 			
-			while (now >= endDate)
+			// begin from yesterday - current date will be downloaded by other job
+			var now = DateOnly.FromDateTime(DateTime.Today).AddDays(-1);
+			
+			var errorsCount = 0;
+			
+			while (now >= FirstWodDate)
 			{
-				if (cancellationToken.IsCancellationRequested)
+				foreach (var wodType in DownloadedWodTypes)
 				{
-					cancellationToken.ThrowIfCancellationRequested();
-				}
-				
-				try
-				{
-					var path = GetFilePath(options.ParseDirPath, now, wodType);
-
-					if (File.Exists(path) == false)
+					if (cancellationToken.IsCancellationRequested)
 					{
-						logger.LogDebug("File {Path} not exists, starting download.", path);
+						cancellationToken.ThrowIfCancellationRequested();
+					}
 
-						var wod = await wodDownloader.Download(now, wodType, cancellationToken);
+					if (errorsCount >= MaxErrorsCount)
+					{
+						logger.LogDebug("Maximum allowed errors count achieved ({ErrorsCount}), job cancelled till next run.", errorsCount);
+						break;
+					}
 
-						var wodJson = JsonSerializer.Serialize(wod, JsonOptions);
+					try
+					{
+						await DownloadAndStore(now, wodType, cancellationToken);
+					}
+					catch (Exception ex)
+					{
+						logger.LogError(ex, "Failed to download wod {WodType} as of {Date}", wodType, now);
 
-						Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-
-						await File.WriteAllTextAsync(path, wodJson, cancellationToken);
-						
-						logger.LogDebug("File {Path} successfully stored.", path);
+						errorsCount++;
 					}
 				}
-				catch (Exception ex)
-				{
-					logger.LogError(ex, "Failed to download wod {WodType} as of {Date}", wodType, now);
-				}
-				
+
 				now = now.AddDays(-1);
+			}
+		}
+
+		private async Task DownloadAndStore(DateOnly now, string wodType, CancellationToken cancellationToken)
+		{
+			var options = appOptions.Value;
+			
+			var path = GetFilePath(options.ParseDirPath, now, wodType);
+
+			if (File.Exists(path) == false)
+			{
+				logger.LogDebug("File {Path} not exists, starting download.", path);
+
+				var wod = await wodDownloader.Download(now, wodType, cancellationToken);
+
+				var wodJson = JsonSerializer.Serialize(wod, JsonOptions);
+
+				Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+
+				await File.WriteAllTextAsync(path, wodJson, cancellationToken);
+
+				logger.LogDebug("File {Path} successfully stored.", path);
 			}
 		}
 
