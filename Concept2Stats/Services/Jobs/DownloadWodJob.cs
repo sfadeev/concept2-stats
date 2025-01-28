@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Concept2Stats.Models;
@@ -91,6 +92,8 @@ namespace Concept2Stats.Services.Jobs
 			{
 				logger.LogDebug("File {Path} does not exists, starting download.", path);
 
+				var sw = Stopwatch.StartNew();
+				
 				var wod = await wodDownloader.Download(now, wodType, cancellationToken);
 
 				var wodJson = JsonSerializer.Serialize(wod, JsonOptions);
@@ -99,7 +102,8 @@ namespace Concept2Stats.Services.Jobs
 
 				await File.WriteAllTextAsync(path, wodJson, cancellationToken);
 
-				logger.LogDebug("File {Path} successfully stored, {ItemCount} items, {FileSize}.", path, wod.Items.Count, wodJson.Length);
+				logger.LogDebug("File {Path} successfully stored, elapsed {Elapsed} ({ItemCount} items, {FileSize} bytes)",
+					path, sw.Elapsed, wod.Items.Count, wodJson.Length);
 			}
 		}
 
