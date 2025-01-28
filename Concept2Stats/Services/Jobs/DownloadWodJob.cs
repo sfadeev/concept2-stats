@@ -7,8 +7,7 @@ using Quartz;
 namespace Concept2Stats.Services.Jobs
 {
 	[DisallowConcurrentExecution]
-	public class DownloadWodJob(ILogger<DownloadWodJob> logger,
-		IHealthcheckService healthcheckService, IMessageSender messageSender) : IJob
+	public class DownloadWodJob(IHealthcheckService healthcheckService) : IJob
 	{
 		public async Task Execute(IJobExecutionContext context)
 		{
@@ -22,7 +21,7 @@ namespace Concept2Stats.Services.Jobs
 	}
 	
 	[DisallowConcurrentExecution]
-	public class DownloadWodArchiveJob(ILogger<DownloadWodJob> logger, IOptions<AppOptions> appOptions,
+	public class DownloadWodArchiveJob(ILogger<DownloadWodArchiveJob> logger, IOptions<AppOptions> appOptions,
 		IHealthcheckService healthcheckService, IWodDownloader wodDownloader) : IJob
 	{
 		public static readonly DateOnly FirstWodDate = new(2022, 7, 8); // Jul 8 2022 is the date of first WoD
@@ -90,7 +89,7 @@ namespace Concept2Stats.Services.Jobs
 
 			if (File.Exists(path) == false)
 			{
-				logger.LogDebug("File {Path} not exists, starting download.", path);
+				logger.LogDebug("File {Path} does not exists, starting download.", path);
 
 				var wod = await wodDownloader.Download(now, wodType, cancellationToken);
 
@@ -100,7 +99,7 @@ namespace Concept2Stats.Services.Jobs
 
 				await File.WriteAllTextAsync(path, wodJson, cancellationToken);
 
-				logger.LogDebug("File {Path} successfully stored.", path);
+				logger.LogDebug("File {Path} successfully stored, {ItemCount} items, {FileSize}.", path, wod.Items.Count, wodJson.Length);
 			}
 		}
 
