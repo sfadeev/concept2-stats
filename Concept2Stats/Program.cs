@@ -42,6 +42,7 @@ namespace Concept2Stats
 					.AddHostedService<BackgroundMessenger>()
 					.AddSingleton<IMessageSender, AppriseMessageSender>()
 					.AddSingleton<IHealthcheckService, HealthcheckIoService>()
+					.AddTransient<IWodFileStorage, WodFileStorage>()
 					.AddTransient<IWodDownloader, WodDownloader>()
 					.AddTransient<IWodParser, WodParser>()
 					
@@ -50,8 +51,9 @@ namespace Concept2Stats
 						quartz.SetProperty("quartz.scheduler.interruptJobsOnShutdownWithWait", "true");
 						
 						quartz
-							.AddJob<DownloadWodJob>(logger, builder.Configuration)
-							.AddJob<DownloadWodArchiveJob>(logger, builder.Configuration);
+							.AddJob<DownloadCurrentWodJob>(logger, builder.Configuration)
+							.AddJob<DownloadYesterdayWodJob>(logger, builder.Configuration)
+							.AddJob<DownloadArchiveWodJob>(logger, builder.Configuration);
 					})
 					.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 

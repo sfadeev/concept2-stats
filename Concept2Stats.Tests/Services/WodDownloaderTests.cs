@@ -1,5 +1,6 @@
 using Concept2Stats.Models;
 using Concept2Stats.Services;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace Concept2Stats.Tests.Services
@@ -16,7 +17,7 @@ namespace Concept2Stats.Tests.Services
 			httpClientMoq.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(new HttpClient());
 			
 			var cancellationToken = CancellationToken.None;
-			var downloader = new WodDownloader(httpClientMoq.Object, new WodParser());
+			var downloader = new WodDownloader(NullLogger<WodDownloader>.Instance, httpClientMoq.Object, new WodParser());
 			
 			// act
 			var result = await downloader.Download(DateOnly.Parse(date), wodType, cancellationToken);
