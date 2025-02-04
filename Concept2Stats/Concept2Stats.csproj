@@ -22,7 +22,13 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Resources\" />
       <Folder Include="wwwroot\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Remove="Resources\countries.json" />
+      <EmbeddedResource Include="Resources\countries.json" />
     </ItemGroup>
 
 </Project>
