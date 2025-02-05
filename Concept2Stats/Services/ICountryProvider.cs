@@ -6,9 +6,9 @@ namespace Concept2Stats.Services
 {
 	public interface ICountryProvider
 	{
-		IDictionary<int, string> GetUnaffiliatedCountryCodes();
-		
 		IEnumerable<Country> GetAllCountries();
+
+		IEnumerable<Country> GetUnaffiliatedCountries();
 		
 		int? GetCountryId(string code);
 	}
@@ -17,16 +17,20 @@ namespace Concept2Stats.Services
 	{
 		private readonly Lazy<CountryCache> _cache = new(BuildCountryCache);
 
-		public IDictionary<int, string> GetUnaffiliatedCountryCodes()
-		{
-			return new Dictionary<int, string> { { 20, "BLR" }, { 178, "RUS" } };
-		}
-
 		public IEnumerable<Country> GetAllCountries()
 		{
 			return _cache.Value.Countries;
 		}
 
+		public IEnumerable<Country> GetUnaffiliatedCountries()
+		{
+			return new List<Country>
+			{
+				new() { Id = 20, Code = "BLR" },
+				new() { Id = 178, Code = "RUS" }
+			};
+		}
+		
 		public int? GetCountryId(string code)
 		{
 			if (_cache.Value.CountryCodeMap.TryGetValue(code, out var country))

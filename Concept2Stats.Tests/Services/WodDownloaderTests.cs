@@ -13,17 +13,20 @@ namespace Concept2Stats.Tests.Services
 		public async Task Download_FromWeb_ShouldWork(string date, string wodType)
 		{
 			// arrange
-			var httpClientMoq = new Mock<IHttpClientFactory>();
-			httpClientMoq.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(new HttpClient());
+			var httpClientFactoryMoq = new Mock<IHttpClientFactory>();
+			httpClientFactoryMoq.Setup(x => x.CreateClient(It.IsAny<string>())).Returns(new HttpClient());
 			
 			var cancellationToken = CancellationToken.None;
-			var downloader = new WodDownloader(NullLogger<WodDownloader>.Instance, httpClientMoq.Object, new WodParser());
+			var downloader = new WodDownloader(NullLogger<WodDownloader>.Instance, httpClientFactoryMoq.Object,
+				new WodParser(), new DefaultCountryProvider());
 			
 			// act
 			var result = await downloader.Download(DateOnly.Parse(date), wodType, cancellationToken);
 			
 			// assert
 			Assert.That(result, Is.Not.Null);
+			Assert.That(result.Items.Count, Is.GreaterThan(0));
+			Assert.That(result.Items.Count(x => x.CountryCode == null), Is.EqualTo(0));
 
 			/*var resultJson = JsonSerializer.Serialize(result, new JsonSerializerOptions
 			{

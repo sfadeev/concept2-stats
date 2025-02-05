@@ -37,6 +37,8 @@ namespace Concept2Stats.Models
 		public string? Location { get; set; }
 
 		public string? Country { get; set; }
+		
+		public string? CountryCode { get; set; }
 
 		public string? Affiliation { get; set; }
 

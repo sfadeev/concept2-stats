@@ -8,9 +8,37 @@ namespace Concept2Stats.Services
 		Task<WodResult> Download(DateOnly date, string wodType, CancellationToken cancellationToken);
 	}
 	
-	public class WodDownloader(ILogger<WodDownloader> logger, IHttpClientFactory httpClientFactory, IWodParser parser) : IWodDownloader
+	public class WodDownloader(ILogger<WodDownloader> logger, IHttpClientFactory httpClientFactory,
+		IWodParser parser, ICountryProvider countryProvider) : IWodDownloader
 	{
 		public async Task<WodResult> Download(DateOnly date, string wodType, CancellationToken cancellationToken)
+		{
+			var result = await Download(date, wodType, null, cancellationToken);
+
+			foreach (var unaffiliatedCountry in countryProvider.GetUnaffiliatedCountries())
+			{
+				var countryResult = await Download(date, wodType, unaffiliatedCountry.Id, cancellationToken);
+
+				foreach (var countryItem in countryResult.Items)
+				{
+					var item = result.Items.SingleOrDefault(x => x.Id == countryItem.Id);
+					
+					if (item != null) item.CountryCode = unaffiliatedCountry.Code;
+				}
+			}
+
+			foreach (var item in result.Items)
+			{
+				if (item.CountryCode == null && item.Country != "UNAFF")
+				{
+					item.CountryCode = item.Country;
+				}
+			}
+
+			return result;
+		}
+		
+		private async Task<WodResult> Download(DateOnly date, string wodType, int? countryId, CancellationToken cancellationToken)
 		{
 			var sw = Stopwatch.StartNew();
 			
@@ -27,7 +55,7 @@ namespace Concept2Stats.Services
 					cancellationToken.ThrowIfCancellationRequested();
 				}
 				
-				var url = $"https://log.concept2.com/wod/{date:yyyy-MM-dd}/{wodType}?page={pageNo}";
+				var url = $"https://log.concept2.com/wod/{date:yyyy-MM-dd}/{wodType}?page={pageNo}&country={countryId}";
 				
 				var response = await httpClient.GetAsync(url, cancellationToken);
 				
@@ -63,10 +91,14 @@ namespace Concept2Stats.Services
 					break;
 				}
 			}
-			
-			logger.LogDebug("WoD {Date} {WodType} downloaded, elapsed {Elapsed} ({ItemCount} items)",
-				date, wodType, sw.Elapsed, result.Items.Count);
 
+			if (logger.IsEnabled(LogLevel.Debug))
+			{
+				logger.LogDebug(
+					"WoD {Date} {WodType} (country: {CountryId}) downloaded, elapsed {Elapsed} ({ItemCount} items)",
+					date, wodType, countryId, sw.Elapsed, result.Items.Count);
+			}
+			
 			return result;
 		}
 	}

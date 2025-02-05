@@ -65,9 +65,9 @@ namespace Concept2Stats.Services
 			
 			if (File.Exists(path))
 			{
-				var json = await File.ReadAllTextAsync(path, cancellationToken);
+				var currentJson = await File.ReadAllTextAsync(path, cancellationToken);
 				
-				var currentWod = JsonSerializer.Deserialize<WodResult>(json, JsonOptions);
+				var currentWod = JsonSerializer.Deserialize<WodResult>(currentJson, JsonOptions);
 
 				if (currentWod?.Items.Count == wod.Items.Count)
 				{
@@ -77,13 +77,14 @@ namespace Concept2Stats.Services
 				}
 			}
 			
-			{
-				Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+			Directory.CreateDirectory(Path.GetDirectoryName(path)!);
 			
-				var json = JsonSerializer.Serialize(wod, JsonOptions);
+			var json = JsonSerializer.Serialize(wod, JsonOptions);
 
-				await File.WriteAllTextAsync(path, json, cancellationToken);
+			await File.WriteAllTextAsync(path, json, cancellationToken);
 
+			if (logger.IsEnabled(LogLevel.Information))
+			{
 				logger.LogInformation(
 					"File {Path} saved, elapsed {Elapsed} ({ItemCount} items, {FileSize} bytes)",
 					path, sw.Elapsed, wod.Items.Count, json.Length);	

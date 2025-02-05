@@ -4,8 +4,8 @@ namespace Concept2Stats.Models
 	{
 		public int Id { get; init; }
 		
-		public string Code { get; init; }
+		public required string Code { get; init; }
 		
-		public string Name { get; init; }
+		public string? Name { get; init; }
 	}
 }

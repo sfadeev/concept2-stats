@@ -45,20 +45,21 @@ namespace Concept2Stats.Tests.Services
 		{
 			var provider = new DefaultCountryProvider();
 
-			var unaffiliatedCountryCodes = provider.GetUnaffiliatedCountryCodes();
+			var unaffiliatedCountryCodes = provider.GetUnaffiliatedCountries().ToDictionary(x => x.Id, x => x.Code);
 
-			var countryCodes = await DownloadCountries("https://log.concept2.com/rankings", "//section[@class='content']//select[@id='country_id']", cancellationToken);
-			var countryNames = await DownloadCountries("https://log.concept2.com/signup", "//div[@class='registration']//select[@id='country_id']", cancellationToken);
+			var countryCodes = await DownloadCountries("https://log.concept2.com/rankings", 
+				"//section[@class='content']//select[@id='country_id']", cancellationToken);
+			
+			var countryNames = await DownloadCountries("https://log.concept2.com/signup",
+				"//div[@class='registration']//select[@id='country_id']", cancellationToken);
 			
 			Assert.That(countryCodes, Is.Not.Null);
 			Assert.That(countryNames, Is.Not.Null);
 			
 			var countries = new List<Country>();
 
-			foreach (var countryName in countryNames)
+			foreach (var (id, name) in countryNames)
 			{
-				var id = countryName.Key;
-				var name = countryName.Value;
 				string code;
 
 				if (countryCodes.TryGetValue(id, out var countryCode))
