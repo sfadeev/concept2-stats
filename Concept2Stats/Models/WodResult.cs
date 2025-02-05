@@ -11,6 +11,8 @@ namespace Concept2Stats.Models
 		public string? Name { get; set; }
 
 		public string? Description { get; set; }
+		
+		public int? TotalCount { get; set; }
 
 		public IList<WodResultItem> Items { get; set; } = new List<WodResultItem>();
 	}

@@ -5,19 +5,41 @@ namespace Concept2Stats.Services
 {
 	public interface IWodDownloader
 	{
-		Task<WodResult> Download(DateOnly date, string wodType, CancellationToken cancellationToken);
+		Task<WodResult> Download(DateOnly date, string wodType, 
+			IWodDownloadCancellationChecker? cancellationChecker, CancellationToken cancellationToken);
+	}
+
+	public interface IWodDownloadCancellationChecker
+	{
+		bool ShouldCancel(WodDownloadProgressContext context, out string? reason);
+	}
+
+	public class WodDownloadProgressContext
+	{
+		public DateOnly Date { get; init; }
+		
+		public required string WodType { get; init; }
+		
+		public int? CountryId { get; init; }
+		
+		public int PageNo { get; init; }
+		
+		public required WodResult Result { get; init; }
 	}
 	
 	public class WodDownloader(ILogger<WodDownloader> logger, IHttpClientFactory httpClientFactory,
 		IWodParser parser, ICountryProvider countryProvider) : IWodDownloader
 	{
-		public async Task<WodResult> Download(DateOnly date, string wodType, CancellationToken cancellationToken)
+		public async Task<WodResult> Download(DateOnly date, string wodType,
+			IWodDownloadCancellationChecker? cancellationChecker, CancellationToken cancellationToken)
 		{
-			var result = await Download(date, wodType, null, cancellationToken);
+			var result = await Download(date, wodType, null, cancellationChecker, cancellationToken);
 
+			// todo: check if cancelled
+			
 			foreach (var unaffiliatedCountry in countryProvider.GetUnaffiliatedCountries())
 			{
-				var countryResult = await Download(date, wodType, unaffiliatedCountry.Id, cancellationToken);
+				var countryResult = await Download(date, wodType, unaffiliatedCountry.Id, cancellationChecker, cancellationToken);
 
 				foreach (var countryItem in countryResult.Items)
 				{
@@ -38,7 +60,8 @@ namespace Concept2Stats.Services
 			return result;
 		}
 		
-		private async Task<WodResult> Download(DateOnly date, string wodType, int? countryId, CancellationToken cancellationToken)
+		private async Task<WodResult> Download(DateOnly date, string wodType, int? countryId, 
+			IWodDownloadCancellationChecker? cancellationChecker, CancellationToken cancellationToken)
 		{
 			var sw = Stopwatch.StartNew();
 			
@@ -63,7 +86,6 @@ namespace Concept2Stats.Services
 				
 				var html = await response.Content.ReadAsStringAsync(cancellationToken);
 				
-				// todo: remap UNAFF countries
 				var page = parser.Parse(html);
 
 				if (pageNo == 1)
@@ -72,6 +94,7 @@ namespace Concept2Stats.Services
 					result.Type = wodType;
 					result.Name = page.Name;
 					result.Description = page.Description;
+					result.TotalCount = page.TotalCount;
 				}
 				
 				if (page.Success == true)
@@ -89,6 +112,29 @@ namespace Concept2Stats.Services
 				else
 				{
 					break;
+				}
+
+				if (cancellationChecker != null)
+				{
+					var progressContext = new WodDownloadProgressContext
+					{
+						Date = date,
+						WodType = wodType,
+						CountryId = countryId,
+						PageNo = pageNo,
+						Result = result
+					};
+					
+					if (cancellationChecker.ShouldCancel(progressContext, out var reason))
+					{
+						result.Success = false;
+					
+						logger.LogDebug(
+							"WoD {Date} {WodType} (country: {CountryId}) download cancelled, reason: {Reason}",
+							date, wodType, countryId, reason);
+						
+						break;
+					}
 				}
 			}
 

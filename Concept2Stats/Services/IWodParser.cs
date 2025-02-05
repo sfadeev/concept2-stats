@@ -24,14 +24,34 @@ namespace Concept2Stats.Services
 			
 			doc.LoadHtml(html);
 			
-			var content = doc.DocumentNode.SelectSingleNode("//section[@class='content']");
+			// var sidebar = doc.DocumentNode.SelectSingleNode("");
+			var stats = doc.DocumentNode?.SelectNodes("//section[@class='sidebar']//div[@class='stat ']");
+			
+			if (stats != null)
+			{
+				foreach (var stat in stats)
+				{
+					var statFigure = stat.SelectSingleNode("//div[@class='stat__figure']");
+					var statName = stat.SelectSingleNode("//div[@class='stat__name']");
+
+					if (statFigure != null && statName != null && statName.InnerText.Contains("Total people"))
+					{
+						result.TotalCount = ParseNumber(statFigure.InnerText);
+						
+						break;
+					}
+				}	
+			}
+
+			var content = doc.DocumentNode?.SelectSingleNode("//section[@class='content']");
 			
 			if (content != null)
 			{
 				result.Name = content.SelectSingleNode("h3")?.InnerText;
-				result.Description = content.SelectSingleNode("p/strong").InnerText;
-
-				if (content.InnerText.Contains("Sorry, no results were found."))
+				result.Description = content.SelectSingleNode("p/strong")?.InnerText;
+				
+				if (content.InnerText.Contains("Sorry, no results were found.") ||
+				    content.InnerText.Contains("Sorry, it looks like something has gone wrong!"))
 				{
 					result.Success = false;
 				
@@ -130,7 +150,7 @@ namespace Concept2Stats.Services
 		
 		private static int? ParseNumber(string value)
 		{
-			return int.TryParse(value, NumberStyles.AllowThousands, CultureInfo, out var result) ? result : null;
+			return int.TryParse(value.Trim(), NumberStyles.AllowThousands, CultureInfo, out var result) ? result : null;
 		}
 		
 		private static TimeSpan? ParseTimeSpan(string value)

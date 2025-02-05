@@ -50,7 +50,7 @@ namespace Concept2Stats.Services
 
 			if (overwriteIfExists)
 			{
-				logger.LogDebug("Force starting download file {Path}.", path);
+				logger.LogDebug("Force download file {Path}.", path);
 			}
 			else if (File.Exists(path) == false)
 			{
@@ -60,34 +60,38 @@ namespace Concept2Stats.Services
 			{
 				return;
 			}
-				
-			var wod = await wodDownloader.Download(date, wodType, cancellationToken);
+
+			WodResult? currentWod = null;
+			IWodDownloadCancellationChecker? cancellationChecker = null;
 			
 			if (File.Exists(path))
 			{
 				var currentJson = await File.ReadAllTextAsync(path, cancellationToken);
 				
-				var currentWod = JsonSerializer.Deserialize<WodResult>(currentJson, JsonOptions);
+				currentWod = JsonSerializer.Deserialize<WodResult>(currentJson, JsonOptions);
 
-				if (currentWod?.Items.Count == wod.Items.Count)
+				if (currentWod != null)
 				{
-					logger.LogDebug("File {Path} does not changed, skip saving.", path);
-					
-					return;
+					cancellationChecker = new WodResultItemCountDownloadCancellationChecker(currentWod.Items.Count);
 				}
 			}
 			
-			Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-			
-			var json = JsonSerializer.Serialize(wod, JsonOptions);
+			var wod = await wodDownloader.Download(date, wodType, cancellationChecker, cancellationToken);
 
-			await File.WriteAllTextAsync(path, json, cancellationToken);
-
-			if (logger.IsEnabled(LogLevel.Information))
+			if (currentWod == null || currentWod.Items.Count != wod.Items.Count)
 			{
-				logger.LogInformation(
-					"File {Path} saved, elapsed {Elapsed} ({ItemCount} items, {FileSize} bytes)",
-					path, sw.Elapsed, wod.Items.Count, json.Length);	
+				Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+			
+				var json = JsonSerializer.Serialize(wod, JsonOptions);
+
+				await File.WriteAllTextAsync(path, json, cancellationToken);
+
+				if (logger.IsEnabled(LogLevel.Information))
+				{
+					logger.LogInformation(
+						"File {Path} saved, elapsed {Elapsed} ({ItemCount} items, {FileSize} bytes)",
+						path, sw.Elapsed, wod.Items.Count, json.Length);	
+				}
 			}
 		}
 		
@@ -96,6 +100,21 @@ namespace Concept2Stats.Services
 			var options = appOptions.Value;
 			
 			return Path.Combine(options.ParseDirPath, $"wod/{date.Year}/{date.Year}-{date.Month:00}-{date.Day:00}-{wodType}.json");
+		}
+
+		private class WodResultItemCountDownloadCancellationChecker(int currentCount) : IWodDownloadCancellationChecker
+		{
+			public bool ShouldCancel(WodDownloadProgressContext context, out string? reason)
+			{
+				if (context.Result.TotalCount == currentCount)
+				{
+					reason = $"WoD result has same items count ({currentCount}).";
+					return true;
+				}
+				
+				reason = null;
+				return false;
+			}
 		}
 	}
 }
