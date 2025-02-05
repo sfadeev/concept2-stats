@@ -42,6 +42,7 @@ namespace Concept2Stats
 					.AddHostedService<BackgroundMessenger>()
 					.AddSingleton<IMessageSender, AppriseMessageSender>()
 					.AddSingleton<IHealthcheckService, HealthcheckIoService>()
+					.AddTransient<ITimeZoneDateProvider, SimpleTimeZoneDateProvider>()
 					.AddTransient<ICountryProvider, DefaultCountryProvider>()
 					.AddTransient<IWodFileStorage, WodFileStorage>()
 					.AddTransient<IWodDownloader, WodDownloader>()

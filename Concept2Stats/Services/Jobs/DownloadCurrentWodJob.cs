@@ -5,7 +5,7 @@ namespace Concept2Stats.Services.Jobs
 {
 	[DisallowConcurrentExecution]
 	public class DownloadCurrentWodJob(ILogger<DownloadCurrentWodJob> logger,
-		IHealthcheckService healthcheckService, IWodFileStorage wodFileStorage) : IJob
+		IHealthcheckService healthcheckService, ITimeZoneDateProvider timeZoneDateProvider, IWodFileStorage wodFileStorage) : IJob
 	{
 		public async Task Execute(IJobExecutionContext context)
 		{
@@ -20,7 +20,7 @@ namespace Concept2Stats.Services.Jobs
 		{
 			await healthcheckService.Success(cancellationToken);
 
-			foreach (var date in DateTimeHelper.GetDatesInAllTimeZones(DateTime.UtcNow))
+			foreach (var date in timeZoneDateProvider.GetDatesInAllTimeZones(DateTime.UtcNow))
 			{
 				if (cancellationToken.IsCancellationRequested)
 				{
