@@ -73,12 +73,12 @@ namespace C2Stats.Services
 				{
 					cancellationChecker = new GenericWodDownloadCancellationChecker(context =>
 					{
-						if (context.CountryId == null && context.Result.TotalCount == currentWod.Items.Count)
+						if (context.CountryId == null && (context.Result.TotalCount ?? 0) == currentWod.Items.Count)
 						{
 							context.CancelReason = $"WoD result have the same items as current saved result ({context.Result.TotalCount}).";
+							
 							return true;
 						}
-						
 						
 						return false;
 					});

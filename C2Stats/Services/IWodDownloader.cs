@@ -113,7 +113,7 @@ namespace C2Stats.Services
 				{
 					Path = $"/wod/{date:yyyy-MM-dd}/{wodType}",
 					Query = new QueryBuilder()
-						.Add("pageNo", pageNo)
+						.Add("page", pageNo)
 						.AddIfExists("country", countryId).ToString()
 				};
 				
