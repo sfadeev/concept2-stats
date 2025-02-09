@@ -2,11 +2,11 @@
 ARG TARGETARCH
 WORKDIR /source
 
-# COPY Directory.Packages.props Concept2Stats/*.csproj .
-COPY Concept2Stats/*.csproj .
+# COPY Directory.Packages.props C2Stats/*.csproj .
+COPY C2Stats/*.csproj .
 RUN dotnet restore -a $TARGETARCH
 
-COPY Concept2Stats/. .
+COPY C2Stats/. .
 RUN dotnet publish --no-restore -a $TARGETARCH -o /app
 
 FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine
