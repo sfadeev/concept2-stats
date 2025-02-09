@@ -2,7 +2,9 @@ namespace Concept2Stats.Models
 {
 	public class WodResult
 	{
-		public bool? Success { get; set; }
+		public bool? Has404Error { get; set; }
+		
+		public bool? Has500Error { get; set; }
 
 		public DateOnly? Date { get; set; }
 		
@@ -13,6 +15,8 @@ namespace Concept2Stats.Models
 		public string? Description { get; set; }
 		
 		public int? TotalCount { get; set; }
+		
+		public int? TotalPageCount { get; set; }
 
 		public IList<WodResultItem> Items { get; set; } = new List<WodResultItem>();
 	}

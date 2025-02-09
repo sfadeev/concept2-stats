@@ -61,27 +61,36 @@ namespace Concept2Stats.Services
 				return;
 			}
 
-			WodResult? currentWod = null;
 			IWodDownloadCancellationChecker? cancellationChecker = null;
 			
 			if (File.Exists(path))
 			{
 				var currentJson = await File.ReadAllTextAsync(path, cancellationToken);
 				
-				currentWod = JsonSerializer.Deserialize<WodResult>(currentJson, JsonOptions);
+				var currentWod = JsonSerializer.Deserialize<WodResult>(currentJson, JsonOptions);
 
 				if (currentWod != null)
 				{
-					cancellationChecker = new WodResultItemCountDownloadCancellationChecker(currentWod.Items.Count);
+					cancellationChecker = new GenericWodDownloadCancellationChecker(context =>
+					{
+						if (context.CountryId == null && context.Result.TotalCount == currentWod.Items.Count)
+						{
+							context.CancelReason = $"WoD result have the same items as current saved result ({context.Result.TotalCount}).";
+							return true;
+						}
+						
+						
+						return false;
+					});
 				}
 			}
 			
 			var wod = await wodDownloader.Download(date, wodType, cancellationChecker, cancellationToken);
 
-			if (currentWod == null || currentWod.Items.Count != wod.Items.Count)
+			if (wod != null) // downloaded and should be saved
 			{
 				Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-			
+
 				var json = JsonSerializer.Serialize(wod, JsonOptions);
 
 				await File.WriteAllTextAsync(path, json, cancellationToken);
@@ -90,7 +99,7 @@ namespace Concept2Stats.Services
 				{
 					logger.LogInformation(
 						"File {Path} saved, elapsed {Elapsed} ({ItemCount} items, {FileSize} bytes)",
-						path, sw.Elapsed, wod.Items.Count, json.Length);	
+						path, sw.Elapsed, wod.Items.Count, json.Length);
 				}
 			}
 		}
@@ -100,21 +109,6 @@ namespace Concept2Stats.Services
 			var options = appOptions.Value;
 			
 			return Path.Combine(options.ParseDirPath, $"wod/{date.Year}/{date.Year}-{date.Month:00}-{date.Day:00}-{wodType}.json");
-		}
-
-		private class WodResultItemCountDownloadCancellationChecker(int currentCount) : IWodDownloadCancellationChecker
-		{
-			public bool ShouldCancel(WodDownloadProgressContext context, out string? reason)
-			{
-				if (context.Result.TotalCount == currentCount)
-				{
-					reason = $"WoD result has same items count ({currentCount}).";
-					return true;
-				}
-				
-				reason = null;
-				return false;
-			}
 		}
 	}
 }

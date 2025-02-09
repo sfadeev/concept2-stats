@@ -1,17 +1,26 @@
 using System.Diagnostics;
 using Concept2Stats.Models;
+using Microsoft.AspNetCore.Http.Extensions;
 
 namespace Concept2Stats.Services
 {
 	public interface IWodDownloader
 	{
-		Task<WodResult> Download(DateOnly date, string wodType, 
+		Task<WodResult?> Download(DateOnly date, string wodType, 
 			IWodDownloadCancellationChecker? cancellationChecker, CancellationToken cancellationToken);
 	}
 
 	public interface IWodDownloadCancellationChecker
 	{
-		bool ShouldCancel(WodDownloadProgressContext context, out string? reason);
+		bool ShouldCancel(WodDownloadProgressContext context);
+	}
+
+	public class GenericWodDownloadCancellationChecker(Func<WodDownloadProgressContext, bool> check) : IWodDownloadCancellationChecker
+	{
+		public bool ShouldCancel(WodDownloadProgressContext context)
+		{
+			return check(context);
+		}
 	}
 
 	public class WodDownloadProgressContext
@@ -25,42 +34,64 @@ namespace Concept2Stats.Services
 		public int PageNo { get; init; }
 		
 		public required WodResult Result { get; init; }
+		
+		public string? CancelReason { get; set; }
 	}
 	
 	public class WodDownloader(ILogger<WodDownloader> logger, IHttpClientFactory httpClientFactory,
 		IWodParser parser, ICountryProvider countryProvider) : IWodDownloader
 	{
-		public async Task<WodResult> Download(DateOnly date, string wodType,
+		public async Task<WodResult?> Download(DateOnly date, string wodType,
 			IWodDownloadCancellationChecker? cancellationChecker, CancellationToken cancellationToken)
 		{
 			var result = await Download(date, wodType, null, cancellationChecker, cancellationToken);
 
-			// todo: check if cancelled
+			// download cancelled
+			if (result == null) return result;
 			
-			foreach (var unaffiliatedCountry in countryProvider.GetUnaffiliatedCountries())
-			{
-				var countryResult = await Download(date, wodType, unaffiliatedCountry.Id, cancellationChecker, cancellationToken);
-
-				foreach (var countryItem in countryResult.Items)
-				{
-					var item = result.Items.SingleOrDefault(x => x.Id == countryItem.Id);
-					
-					if (item != null) item.CountryCode = unaffiliatedCountry.Code;
-				}
-			}
-
+			var unaffCount = 0;
+			
 			foreach (var item in result.Items)
 			{
-				if (item.CountryCode == null && item.Country != "UNAFF")
+				if (item.Country == countryProvider.UnaffiliatedCountryPlaceholder)
+				{
+					unaffCount++;
+				}
+				else
 				{
 					item.CountryCode = item.Country;
+				}
+			}
+			
+			if (unaffCount > 0)
+			{
+				foreach (var unaffiliatedCountry in countryProvider.GetUnaffiliatedCountries())
+				{
+					if (unaffCount <= 0) break;
+					
+					var countryResult = await Download(date, wodType, unaffiliatedCountry.Id, cancellationChecker, cancellationToken);
+
+					// download cancelled
+					if (countryResult == null) continue;
+				
+					foreach (var countryItem in countryResult.Items)
+					{
+						var item = result.Items.SingleOrDefault(x => x.Id == countryItem.Id);
+
+						if (item != null)
+						{
+							item.CountryCode = unaffiliatedCountry.Code;
+							
+							unaffCount--;
+						}
+					}
 				}
 			}
 
 			return result;
 		}
 		
-		private async Task<WodResult> Download(DateOnly date, string wodType, int? countryId, 
+		private async Task<WodResult?> Download(DateOnly date, string wodType, int? countryId, 
 			IWodDownloadCancellationChecker? cancellationChecker, CancellationToken cancellationToken)
 		{
 			var sw = Stopwatch.StartNew();
@@ -77,10 +108,18 @@ namespace Concept2Stats.Services
 				{
 					cancellationToken.ThrowIfCancellationRequested();
 				}
+
+				var uriBuilder = new UriBuilder(Uri.UriSchemeHttps, "log.concept2.com")
+				{
+					Path = $"/wod/{date:yyyy-MM-dd}/{wodType}",
+					Query = new QueryBuilder()
+						.Add("pageNo", pageNo)
+						.AddIfExists("country", countryId).ToString()
+				};
 				
-				var url = $"https://log.concept2.com/wod/{date:yyyy-MM-dd}/{wodType}?page={pageNo}&country={countryId}";
+				logger.LogDebug("Downloading {Url}", uriBuilder.Uri);
 				
-				var response = await httpClient.GetAsync(url, cancellationToken);
+				var response = await httpClient.GetAsync(uriBuilder.Uri, cancellationToken);
 				
 				response.EnsureSuccessStatusCode();
 				
@@ -97,23 +136,15 @@ namespace Concept2Stats.Services
 					result.TotalCount = page.TotalCount;
 				}
 				
-				if (page.Success == true)
+				foreach (var item in page.Items)
 				{
-					foreach (var item in page.Items)
+					// rows can move from one page to another while downloading (new rows appears at the beginning)
+					if (result.Items.FirstOrDefault(x => x.Id == item.Id) == null)
 					{
-						if (result.Items.FirstOrDefault(x => x.Id == item.Id) == null)
-						{
-							result.Items.Add(item);
-						}
+						result.Items.Add(item);
 					}
-					
-					pageNo++;
 				}
-				else
-				{
-					break;
-				}
-
+				
 				if (cancellationChecker != null)
 				{
 					var progressContext = new WodDownloadProgressContext
@@ -125,16 +156,23 @@ namespace Concept2Stats.Services
 						Result = result
 					};
 					
-					if (cancellationChecker.ShouldCancel(progressContext, out var reason))
+					if (cancellationChecker.ShouldCancel(progressContext))
 					{
-						result.Success = false;
-					
 						logger.LogDebug(
 							"WoD {Date} {WodType} (country: {CountryId}) download cancelled, reason: {Reason}",
-							date, wodType, countryId, reason);
+							date, wodType, countryId, progressContext.CancelReason);
 						
-						break;
+						return null;
 					}
+				}
+				
+				if (page.TotalPageCount > pageNo)
+				{	
+					pageNo++;
+				}
+				else
+				{
+					break;
 				}
 			}
 

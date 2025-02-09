@@ -1,22 +1,12 @@
-using System.Diagnostics;
 using Quartz;
 
 namespace Concept2Stats.Services.Jobs
 {
 	[DisallowConcurrentExecution]
 	public class DownloadCurrentWodJob(ILogger<DownloadCurrentWodJob> logger,
-		IHealthcheckService healthcheckService, ITimeZoneDateProvider timeZoneDateProvider, IWodFileStorage wodFileStorage) : IJob
+		IHealthcheckService healthcheckService, ITimeZoneDateProvider timeZoneDateProvider, IWodFileStorage wodFileStorage) : AbstractJob(logger)
 	{
-		public async Task Execute(IJobExecutionContext context)
-		{
-			var sw = Stopwatch.StartNew();
-			
-			await ExecuteAsync(context.CancellationToken);
-			
-			logger.LogDebug("Job completed, elapsed {Elapsed}", sw.Elapsed);
-		}
-
-		private async Task ExecuteAsync(CancellationToken cancellationToken)
+		protected override async Task ExecuteAsync(CancellationToken cancellationToken)
 		{
 			await healthcheckService.Success(cancellationToken);
 

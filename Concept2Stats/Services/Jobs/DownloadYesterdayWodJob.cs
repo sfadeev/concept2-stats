@@ -1,25 +1,15 @@
-using System.Diagnostics;
 using Quartz;
 
 namespace Concept2Stats.Services.Jobs
 {
 	[DisallowConcurrentExecution]
 	public class DownloadYesterdayWodJob(ILogger<DownloadYesterdayWodJob> logger,
-		IHealthcheckService healthcheckService, IWodFileStorage wodFileStorage) : IJob
+		IHealthcheckService healthcheckService, IWodFileStorage wodFileStorage) : AbstractJob(logger)
 	{
 		// number of yesterdays to re-download - in case some devices were offline and submitted logs later
 		private const int MaxDayCount = 2;
 		
-		public async Task Execute(IJobExecutionContext context)
-		{
-			var sw = Stopwatch.StartNew();
-			
-			await ExecuteAsync(context.CancellationToken);
-			
-			logger.LogDebug("Job completed, elapsed {Elapsed}", sw.Elapsed);
-		}
-
-		private async Task ExecuteAsync(CancellationToken cancellationToken)
+		protected override async Task ExecuteAsync(CancellationToken cancellationToken)
 		{
 			await healthcheckService.Success(cancellationToken);
 			

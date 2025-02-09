@@ -6,6 +6,8 @@ namespace Concept2Stats.Services
 {
 	public interface ICountryProvider
 	{
+		string UnaffiliatedCountryPlaceholder { get; }
+		
 		IEnumerable<Country> GetAllCountries();
 
 		IEnumerable<Country> GetUnaffiliatedCountries();
@@ -17,6 +19,8 @@ namespace Concept2Stats.Services
 	{
 		private readonly Lazy<CountryCache> _cache = new(BuildCountryCache);
 
+		public string UnaffiliatedCountryPlaceholder => "UNAFF";
+
 		public IEnumerable<Country> GetAllCountries()
 		{
 			return _cache.Value.Countries;
@@ -26,8 +30,9 @@ namespace Concept2Stats.Services
 		{
 			return new List<Country>
 			{
-				new() { Id = 20, Code = "BLR" },
-				new() { Id = 178, Code = "RUS" }
+				// countries with more results should be first to minimize downloads
+				new() { Id = 178, Code = "RUS" },
+				new() { Id = 20, Code = "BLR" }
 			};
 		}
 		

@@ -6,8 +6,8 @@ namespace Concept2Stats.Tests.Services
 	public class WodParserTests
 	{
 		[Test]
-		[TestCase("../../../Content/wod-2025-01-01-rowerg-no-result.html")]
-		public async Task Parse_WithNoResult_ShouldWork(string htmlPath)
+		[TestCase("../../../Content/wod-2025-01-01-rowerg-no-result.html", 1609, 33)]
+		public async Task Parse_WithNoResult_ShouldWork(string htmlPath, int totalCount, int totalPageNum)
 		{
 			// arrange
 			var parser = new WodParser();
@@ -18,8 +18,10 @@ namespace Concept2Stats.Tests.Services
 			
 			// assert
 			Assert.That(result, Is.Not.Null);
-			Assert.That(result.Success, Is.False);
-			Assert.That(result.TotalCount, Is.EqualTo(1609));
+			Assert.That(result.Has404Error, Is.True);
+			Assert.That(result.Has500Error, Is.Null);
+			Assert.That(result.TotalCount, Is.EqualTo(totalCount));
+			Assert.That(result.TotalPageCount, Is.EqualTo(totalPageNum));
 		}
 		
 		[Test]
@@ -35,13 +37,16 @@ namespace Concept2Stats.Tests.Services
 			
 			// assert
 			Assert.That(result, Is.Not.Null);
-			Assert.That(result.Success, Is.False);
+			Assert.That(result.Has404Error, Is.Null);
+			Assert.That(result.Has500Error, Is.True);
 			Assert.That(result.TotalCount, Is.EqualTo(null));
+			Assert.That(result.TotalCount, Is.EqualTo(null));
+			Assert.That(result.TotalPageCount, Is.EqualTo(null));
 		}
 		
 		[Test]
-		[TestCase("../../../Content/wod-2025-01-21-rowerg-time.html", 50, 1847)]
-		public async Task Parse_WithResultInTime_ShouldWork(string htmlPath, int rowCount, int totalCount)
+		[TestCase("../../../Content/wod-2025-01-21-rowerg-time.html", 50, 1847, 37)]
+		public async Task Parse_WithResultInTime_ShouldWork(string htmlPath, int rowCount, int totalCount, int totalPageNum)
 		{
 			// arrange
 			var parser = new WodParser();
@@ -51,15 +56,15 @@ namespace Concept2Stats.Tests.Services
 			var result = parser.Parse(html);
 			
 			// assert
-			AssertWodResult(result, rowCount, totalCount);
+			AssertWodResult(result, rowCount, totalCount, totalPageNum);
 
 			Assert.That(result.Items.Count(x => x.ResultMeters.HasValue), Is.EqualTo(0));
 			Assert.That(result.Items.Count(x => x.ResultTime.HasValue), Is.EqualTo(rowCount));
 		}
 		
 		[Test]
-		[TestCase("../../../Content/wod-2025-01-25-rowerg-meters.html", 50, 1704)]
-		public async Task Parse_WithResultInMeters_ShouldWork(string htmlPath, int rowCount, int totalCount)
+		[TestCase("../../../Content/wod-2025-01-25-rowerg-meters.html", 50, 1704, 35)]
+		public async Task Parse_WithResultInMeters_ShouldWork(string htmlPath, int rowCount, int totalCount, int totalPageNum)
 		{
 			// arrange
 			var parser = new WodParser();
@@ -69,19 +74,21 @@ namespace Concept2Stats.Tests.Services
 			var result = parser.Parse(html);
 			
 			// assert
-			AssertWodResult(result, rowCount, totalCount);
+			AssertWodResult(result, rowCount, totalCount, totalPageNum);
 			
 			Assert.That(result.Items.Count(x => x.ResultMeters.HasValue), Is.EqualTo(rowCount));
 			Assert.That(result.Items.Count(x => x.ResultTime.HasValue), Is.EqualTo(0));
 		}
 
-		private static void AssertWodResult(WodResult result, int rowCount, int totalCount)
+		private static void AssertWodResult(WodResult result, int rowCount, int totalCount, int totalPageNum)
 		{
 			Assert.That(result, Is.Not.Null);
-			Assert.That(result.Success, Is.True);
+			Assert.That(result.Has404Error, Is.Null);
+			Assert.That(result.Has500Error, Is.Null);
 			Assert.That(result.Name, Is.Not.Null);
 			Assert.That(result.Description, Is.Not.Null);
 			Assert.That(result.TotalCount, Is.EqualTo(totalCount));
+			Assert.That(result.TotalPageCount, Is.EqualTo(totalPageNum));
 			Assert.That(result.Items, Has.Count.EqualTo(rowCount));
 			Assert.That(result.Items.Count(x => x.Id.HasValue), Is.EqualTo(rowCount));
 			Assert.That(result.Items.Select(x => x.Id!.Value).Distinct().Count(), Is.EqualTo(rowCount));

@@ -24,7 +24,6 @@ namespace Concept2Stats.Services
 			
 			doc.LoadHtml(html);
 			
-			// var sidebar = doc.DocumentNode.SelectSingleNode("");
 			var stats = doc.DocumentNode?.SelectNodes("//section[@class='sidebar']//div[@class='stat ']");
 			
 			if (stats != null)
@@ -42,7 +41,7 @@ namespace Concept2Stats.Services
 					}
 				}	
 			}
-
+			
 			var content = doc.DocumentNode?.SelectSingleNode("//section[@class='content']");
 			
 			if (content != null)
@@ -50,10 +49,32 @@ namespace Concept2Stats.Services
 				result.Name = content.SelectSingleNode("h3")?.InnerText;
 				result.Description = content.SelectSingleNode("p/strong")?.InnerText;
 				
-				if (content.InnerText.Contains("Sorry, no results were found.") ||
-				    content.InnerText.Contains("Sorry, it looks like something has gone wrong!"))
+				var paging = content.SelectSingleNode("//ul[@class='pagination']");
+
+				if (paging != null)
 				{
-					result.Success = false;
+					var maxPageNo = 0;
+					
+					foreach (var page in paging.SelectNodes("li"))
+					{
+						var pageNo = ParseNumber(page.InnerText);
+						
+						if (pageNo != null) maxPageNo = pageNo.Value;
+					}
+
+					result.TotalPageCount = maxPageNo;
+				}
+				
+				if (content.InnerText.Contains("Sorry, no results were found."))
+				{
+					result.Has404Error = true;
+				
+					return result;
+				}
+				
+				if (content.InnerText.Contains("Sorry, it looks like something has gone wrong!"))
+				{
+					result.Has500Error = true;
 				
 					return result;
 				}
@@ -135,8 +156,6 @@ namespace Concept2Stats.Services
 
 						result.Items.Add(item);
 					}
-
-					result.Success = true;
 				}
 			}
 

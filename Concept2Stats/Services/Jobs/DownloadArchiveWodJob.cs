@@ -1,26 +1,16 @@
-using System.Diagnostics;
 using Quartz;
 
 namespace Concept2Stats.Services.Jobs
 {
 	[DisallowConcurrentExecution]
 	public class DownloadArchiveWodJob(ILogger<DownloadArchiveWodJob> logger,
-		IHealthcheckService healthcheckService, IWodFileStorage wodFileStorage) : IJob
+		IHealthcheckService healthcheckService, IWodFileStorage wodFileStorage) : AbstractJob(logger)
 	{
 		private static readonly DateOnly FirstWodDate = new(2022, 7, 8); // Jul 8 2022 is the date of first WoD
 
 		private const int MaxErrorsCount = 10;
 
-		public async Task Execute(IJobExecutionContext context)
-		{
-			var sw = Stopwatch.StartNew();
-			
-			await ExecuteAsync(context.CancellationToken);
-			
-			logger.LogDebug("Job completed, elapsed {Elapsed}", sw.Elapsed);
-		}
-
-		private async Task ExecuteAsync(CancellationToken cancellationToken)
+		protected override async Task ExecuteAsync(CancellationToken cancellationToken)
 		{
 			await healthcheckService.Success(cancellationToken);
 			
