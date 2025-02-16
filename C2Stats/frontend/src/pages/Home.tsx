@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import WodCalendarData from '../components/WodCalendarData';
 
-const Home: React.FC = () => {
+export default () => {
     const [date, setDate] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
@@ -18,14 +19,9 @@ const Home: React.FC = () => {
 
     return (
         <div>
-            <h1>Home Page</h1>
-            {error ? (
-                <p style={{ color: 'red' }}>{error}</p>
-            ) : (
-                <p>Date from API: {date ? date : 'Loading...'}</p>
-            )}
+            <WodCalendarData wodType='rowerg' year={2025} />
+            <WodCalendarData wodType='rowerg' year={2024} />
+            <WodCalendarData wodType='rowerg' year={2023} />
         </div>
     );
 };
-
-export default Home;
