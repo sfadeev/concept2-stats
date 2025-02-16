@@ -14,4 +14,5 @@ EXPOSE 8080
 WORKDIR /app
 COPY --from=build /app .
 USER $APP_UID
+# ENV ASPNETCORE_ENVIRONMENT=Production
 ENTRYPOINT [ "./c2-stats" ]

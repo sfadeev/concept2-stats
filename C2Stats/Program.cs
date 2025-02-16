@@ -60,13 +60,19 @@ namespace C2Stats
 					.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
 				builder.Services.AddControllersWithViews();
-
+				/*builder.Services.AddSpaStaticFiles(config => // ???
+				{
+					config.RootPath = "wwwroot";
+				});*/
+				
 				var app = builder.Build();
 
 				app.UseSerilogRequestLogging();
 				
-				if (app.Environment.IsDevelopment() == false)
+				// if (app.Environment.IsDevelopment() == false)
 				{
+					// app.UseSpaStaticFiles(); // ???
+					
 					app.UseExceptionHandler("/Home/Error");
 					// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
 					app.UseHsts();
@@ -76,13 +82,27 @@ namespace C2Stats
 				app.UseStaticFiles();
 
 				app.UseRouting();
-
 				app.UseAuthorization();
-
+				
 				app.MapControllerRoute(
 					"default",
 					"{controller=Home}/{action=Index}/{id?}");
-
+				
+				app.UseSpa(spa =>
+				{
+					/*if (app.Environment.IsDevelopment())
+					{
+						spa.UseProxyToSpaDevelopmentServer("http://localhost:3000");
+					}*/
+				});
+				
+				app.MapGet("/api/date", () =>
+				{
+					return Results.Json(new { date = DateTime.UtcNow.ToString("O") });
+				});
+				
+				// app.MapFallbackToFile("index.html"); // serves react app for all routes
+				
 				app.Run();
 			}
 			catch (Exception ex)

@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "outDir": "./dist", // todo: check
+        "module": "ESNext",
+        "target": "ES6", // todo: check
+        "jsx": "react-jsx",
+        "moduleResolution": "Node",
+        "strict": true,
+        "allowSyntheticDefaultImports": true // todo: check
+    },
+    "include": [
+        "src"
+    ]
+}
