@@ -1,18 +1,17 @@
 import { useEffect, useState } from "react";
-import WodCalendar, { WodCalendarProps } from "./WodCalendar";
+import WodDayBar, { WodDayBarProps } from "./WodDayBar";
 
-export interface WodCalendarDataProps {
-    year: number;
+export interface WodDayBarDataProps {
     wodType: string;
 }
 
-export default ({ year, wodType }: WodCalendarDataProps) => {
+export default ({ wodType }: WodDayBarDataProps) => {
 
-    const [data, setData] = useState<WodCalendarProps | null>(null);
+    const [data, setData] = useState<WodDayBarProps | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        fetch(`/api/wod/year?year=${year}&wodType=${wodType}`)
+        fetch(`/api/wod/day?year=${12345}&wodType=${wodType}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Failed to fetch data');
@@ -31,7 +30,7 @@ export default ({ year, wodType }: WodCalendarDataProps) => {
                 <p style={{ color: 'red' }}>{error}</p>
             ) : (
                 data ? (
-                    <WodCalendar from={data.from} to={data.to} data={data.data} />
+                    <WodDayBar data={data.data} />
                 ) : (
                     <div>Loading...</div>
                 )

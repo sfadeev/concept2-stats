@@ -6,9 +6,11 @@ export interface WodCalendarProps {
     data: CalendarDatum[];
 }
 
+// https://nivo.rocks/calendar/
 export default ({ from, to, data }: WodCalendarProps) => (
 
     <div style={{ width: "100%", height: 200 }}>
+
         <ResponsiveCalendar
             data={data ?? []}
             from={from}
@@ -16,7 +18,8 @@ export default ({ from, to, data }: WodCalendarProps) => (
             emptyColor="#eeeeee"
             colors={['#61cdbb', '#97e3d5', '#e8c1a0', '#f47560']}
             margin={{ top: 40, right: 40, bottom: 40, left: 40 }}
-            yearSpacing={40}
+            yearSpacing={30}
+            yearLegendOffset={20}
             monthBorderColor="#ffffff"
             dayBorderWidth={2}
             dayBorderColor="#ffffff"
@@ -33,5 +36,6 @@ export default ({ from, to, data }: WodCalendarProps) => (
                 }
             ]}
         />
+
     </div>
 );

@@ -61,6 +61,7 @@ namespace C2Stats
 					.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
 				builder.Services.AddControllersWithViews();
+				
 				/*builder.Services.AddSpaStaticFiles(config => // ???
 				{
 					config.RootPath = "wwwroot";
