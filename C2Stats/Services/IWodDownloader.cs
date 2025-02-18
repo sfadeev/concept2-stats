@@ -235,8 +235,8 @@ namespace C2Stats.Services
 			if (logger.IsEnabled(LogLevel.Debug))
 			{
 				logger.LogDebug(
-					"WoD {Date} {WodType} (country: {CountryId}) downloaded, elapsed {Elapsed} ({ItemCount} items)",
-					date, wodType, countryId, sw.Elapsed, result.Items.Count);
+					"WoD {Date} {WodType} (country: {CountryId}, gender: {Gender}) downloaded, elapsed {Elapsed} ({ItemCount} items)",
+					date, wodType, countryId, gender, sw.Elapsed, result.Items.Count);
 			}
 			
 			return result;
