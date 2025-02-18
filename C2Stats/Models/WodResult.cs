@@ -38,14 +38,14 @@ namespace C2Stats.Models
 
 		public string? Name { get; set; }
 
+		public string? Sex { get; set; }
+		
 		public int? Age { get; set; }
 
 		public string? Location { get; set; }
 
 		public string? Country { get; set; }
 		
-		public string? CountryCode { get; set; }
-
 		public string? Affiliation { get; set; }
 
 		public TimeSpan? ResultTime { get; set; }

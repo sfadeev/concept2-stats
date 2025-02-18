@@ -39,27 +39,45 @@ namespace C2Stats.Services
 	}
 	
 	public class WodDownloader(ILogger<WodDownloader> logger, IHttpClientFactory httpClientFactory,
-		IWodParser parser, ICountryProvider countryProvider) : IWodDownloader
+		IWodParser parser, ICountryProvider countryProvider, IProfileCache profileCache) : IWodDownloader
 	{
 		public async Task<WodResult?> Download(DateOnly date, string wodType,
 			IWodDownloadCancellationChecker? cancellationChecker, CancellationToken cancellationToken)
 		{
-			var result = await Download(date, wodType, null, cancellationChecker, cancellationToken);
+			var result = await Download(date, wodType, null, null, cancellationChecker, cancellationToken);
 
 			// download cancelled
 			if (result == null) return result;
 			
 			var unaffCount = 0;
+			var unsexCount = 0;
 			
 			foreach (var item in result.Items)
 			{
-				if (item.Country == countryProvider.UnaffiliatedCountryPlaceholder)
+				if (item.Id != null)
 				{
-					unaffCount++;
-				}
-				else
-				{
-					item.CountryCode = item.Country;
+					profileCache.TryGetProfile(item.Id.Value, out var profile);
+						
+					if (item.Country == countryProvider.UnaffiliatedCountryPlaceholder)
+					{
+						if (profile?.Country != null)
+						{
+							item.Country = profile.Country;
+						}
+						else
+						{
+							unaffCount++;
+						}
+					}
+
+					if (profile != null)
+					{
+						item.Sex = profile.Sex;
+					}
+					else
+					{
+						unsexCount++;
+					}
 				}
 			}
 			
@@ -69,10 +87,10 @@ namespace C2Stats.Services
 				{
 					if (unaffCount <= 0) break;
 					
-					var countryResult = await Download(date, wodType, unaffiliatedCountry.Id, cancellationChecker, cancellationToken);
+					var countryResult = await Download(date, wodType, unaffiliatedCountry.Id, null, cancellationChecker, cancellationToken);
 
 					// download cancelled
-					if (countryResult == null) continue;
+					if (countryResult == null) return null;
 				
 					foreach (var countryItem in countryResult.Items)
 					{
@@ -80,7 +98,7 @@ namespace C2Stats.Services
 
 						if (item != null)
 						{
-							item.CountryCode = unaffiliatedCountry.Code;
+							item.Country = unaffiliatedCountry.Code;
 							
 							unaffCount--;
 						}
@@ -88,10 +106,44 @@ namespace C2Stats.Services
 				}
 			}
 
+			if (unsexCount > 0)
+			{
+				const string genderM = "M";
+				const string genderF = "F";
+				
+				var genderResult = await Download(date, wodType, null, genderF, cancellationChecker, cancellationToken);
+
+				// download cancelled
+				if (genderResult == null) return null;
+
+				var womenIds = genderResult.Items.Where(x => x.Id != null).Select(x => x.Id!.Value).ToList();
+				
+				var genderUnknown = result.Items.Where(x => x.Id != null && x.Sex == null).ToList();
+
+				foreach (var genderItem in genderUnknown)
+				{
+					genderItem.Sex = womenIds.Contains(genderItem.Id!.Value) ? genderF : genderM;
+				}
+			}
+
+			foreach (var item in result.Items)
+			{
+				if (item.Id != null)
+				{
+					profileCache.UpdatedProfile(new Profile
+					{
+						Id = item.Id.Value,
+						Name = item.Name,
+						Country = item.Country,
+						Sex = item.Sex
+					});
+				}
+			}
+			
 			return result;
 		}
 		
-		private async Task<WodResult?> Download(DateOnly date, string wodType, int? countryId, 
+		private async Task<WodResult?> Download(DateOnly date, string wodType, int? countryId, string? gender, 
 			IWodDownloadCancellationChecker? cancellationChecker, CancellationToken cancellationToken)
 		{
 			var sw = Stopwatch.StartNew();
@@ -101,6 +153,7 @@ namespace C2Stats.Services
 			var result = new WodResult();
 			
 			var pageNo = 1;
+			int? totalPageCount = null;
 			
 			while (pageNo <= 300) // todo: move to settings
 			{
@@ -114,10 +167,12 @@ namespace C2Stats.Services
 					Path = $"/wod/{date:yyyy-MM-dd}/{wodType}",
 					Query = new QueryBuilder()
 						.Add("page", pageNo)
-						.AddIfExists("country", countryId).ToString()
+						.AddIfExists("country", countryId)
+						.AddIfExists("gender", gender)
+						.ToString()
 				};
 				
-				logger.LogDebug("Downloading {Url}", uriBuilder.Uri);
+				logger.LogDebug("Downloading ({PageNo}/{TotalPageCount}) {Url}", pageNo, totalPageCount, uriBuilder.Uri);
 				
 				var response = await httpClient.GetAsync(uriBuilder.Uri, cancellationToken);
 				
@@ -169,6 +224,7 @@ namespace C2Stats.Services
 				if (page.TotalPageCount > pageNo)
 				{	
 					pageNo++;
+					totalPageCount = page.TotalPageCount;
 				}
 				else
 				{

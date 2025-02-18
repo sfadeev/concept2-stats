@@ -7,7 +7,7 @@ namespace C2Stats.Services.Jobs
 		IHealthcheckService healthcheckService, IWodFileStorage wodFileStorage) : AbstractJob(logger)
 	{
 		// number of yesterdays to re-download - in case some devices were offline and submitted logs later
-		private const int MaxDayCount = 2;
+		private const int MaxDayCount = 3;
 		
 		protected override async Task ExecuteAsync(CancellationToken cancellationToken)
 		{

@@ -11,9 +11,9 @@ namespace C2Stats.Services
 			return queryBuilder;
 		}
 		
-		public static QueryBuilder AddIfExists(this QueryBuilder queryBuilder, string key, int? value)
+		public static QueryBuilder AddIfExists(this QueryBuilder queryBuilder, string key, object? value)
 		{
-			if (value != null) queryBuilder.Add(key, value.Value.ToString());
+			if (value != null) queryBuilder.Add(key, value.ToString() ?? string.Empty);
 				
 			return queryBuilder;
 		}

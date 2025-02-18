@@ -42,6 +42,9 @@ namespace C2Stats
 					.AddHostedService<BackgroundMessenger>()
 					.AddSingleton<IMessageSender, AppriseMessageSender>()
 					.AddSingleton<IHealthcheckService, HealthcheckIoService>()
+					
+					.AddSingleton<IProfileCache, FileProfileCache>()
+					
 					.AddTransient<ITimeZoneDateProvider, SimpleTimeZoneDateProvider>()
 					.AddTransient<ICountryProvider, DefaultCountryProvider>()
 					.AddTransient<IWodFileStorage, WodFileStorage>()

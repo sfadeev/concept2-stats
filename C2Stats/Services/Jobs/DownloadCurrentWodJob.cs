@@ -9,7 +9,7 @@ namespace C2Stats.Services.Jobs
 		protected override async Task ExecuteAsync(CancellationToken cancellationToken)
 		{
 			await healthcheckService.Success(cancellationToken);
-
+			
 			foreach (var date in timeZoneDateProvider.GetDatesInAllTimeZones(DateTime.UtcNow))
 			{
 				if (cancellationToken.IsCancellationRequested)
