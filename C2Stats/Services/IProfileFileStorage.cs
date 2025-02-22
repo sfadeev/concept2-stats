@@ -21,7 +21,7 @@ namespace C2Stats.Services
 	}
 
 	public class ProfileFileStorage(
-		ILogger<WodFileStorage> logger, IOptions<AppOptions> appOptions, IPublisher mediator) : IProfileFileStorage
+		ILogger<ProfileFileStorage> logger, IOptions<AppOptions> appOptions, IPublisher mediator) : IProfileFileStorage
 	{
 		private readonly Lock _lock = new();
 		
@@ -94,9 +94,9 @@ namespace C2Stats.Services
 				
 				if (map.TryGetValue(profile.Id, out var existing))
 				{
-					if (profile.Name == existing?.Name &&
-					    profile.Country == existing?.Country &&
-					    profile.Sex == existing?.Sex) return false;
+					if (profile.Name == existing.Name &&
+					    profile.Country == existing.Country &&
+					    profile.Sex == existing.Sex) return false;
 					
 					_updated.Add(profile.Id);
 				}
@@ -133,7 +133,7 @@ namespace C2Stats.Services
 					{
 						logger.LogInformation(
 							"File {Path} saved, (total {TotalCount}, added {AddedCount}, updated {UpdatedCount})",
-							path, profiles.Length, _added, _updated);
+							path, profiles.Length, _added.Count, _updated.Count);
 					}
 					
 					mediator.Publish(new ProfilesUpdated
