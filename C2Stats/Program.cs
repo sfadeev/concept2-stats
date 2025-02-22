@@ -1,6 +1,7 @@
 using C2Stats.Models;
 using C2Stats.Services;
 using C2Stats.Services.Jobs;
+using LinqToDB.Data;
 using Quartz;
 using Serilog;
 using Serilog.Extensions.Logging;
@@ -30,26 +31,30 @@ namespace C2Stats
 					.Configure<AppOptions>()
 					.Configure<AppriseOptions>()
 					.Configure<HealthcheckIoOptions>();
-				
+
 				builder.Services
 					.AddSerilog((services, lc) => lc
 						.ReadFrom.Configuration(builder.Configuration)
-						.ReadFrom.Services(services));
+						.ReadFrom.Services(services))
+					.AddMediatR(cfg => cfg.RegisterServicesFromAssemblyContaining<Program>());
+				
+				DataConnection.DefaultSettings = new DbSettingsProvider(builder.Configuration);
 
 				builder.Services
 					.AddHttpClient()
 					.AddServiceKeyProvider()
 					.AddHostedService<BackgroundMessenger>()
+					
 					.AddSingleton<IMessageSender, AppriseMessageSender>()
 					.AddSingleton<IHealthcheckService, HealthcheckIoService>()
-					
-					.AddSingleton<IProfileCache, FileProfileCache>()
+					.AddSingleton<IProfileFileStorage, ProfileFileStorage>()
 					
 					.AddTransient<ITimeZoneDateProvider, SimpleTimeZoneDateProvider>()
 					.AddTransient<ICountryProvider, DefaultCountryProvider>()
 					.AddTransient<IWodFileStorage, WodFileStorage>()
 					.AddTransient<IWodDownloader, WodDownloader>()
 					.AddTransient<IWodParser, WodParser>()
+					.AddTransient<IProfileDbStorage, ProfileDbStorage>()
 					.AddTransient<IWodStatsService, DefaultWodStatsService>()
 					
 					.AddQuartz(quartz =>

@@ -13,7 +13,7 @@ namespace C2Stats.Services
 		Task DownloadAndStoreIfNotExists(DateOnly date, CancellationToken cancellationToken);
 	}
 	
-	public class WodFileStorage(ILogger<WodFileStorage> logger, IProfileCache profileCache,
+	public class WodFileStorage(ILogger<WodFileStorage> logger, IProfileFileStorage profileFileStorage,
 		IOptions<AppOptions> appOptions, IWodDownloader wodDownloader) : IWodFileStorage
 	{
 		private static readonly string[] DownloadedWodTypes = [ WodType.RowErg, WodType.BikeErg, WodType.SkiErg ];
@@ -93,7 +93,7 @@ namespace C2Stats.Services
 
 				var json = JsonSerializer.Serialize(wod, JsonOptions);
 
-				profileCache.Persist();
+				profileFileStorage.Persist();
 				
 				await File.WriteAllTextAsync(path, json, cancellationToken);
 

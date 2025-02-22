@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using C2Stats.Entities;
 using C2Stats.Models;
 using Microsoft.AspNetCore.Http.Extensions;
 
@@ -39,7 +40,7 @@ namespace C2Stats.Services
 	}
 	
 	public class WodDownloader(ILogger<WodDownloader> logger, IHttpClientFactory httpClientFactory,
-		IWodParser parser, ICountryProvider countryProvider, IProfileCache profileCache) : IWodDownloader
+		IWodParser parser, ICountryProvider countryProvider, IProfileFileStorage profileFileStorage) : IWodDownloader
 	{
 		public async Task<WodResult?> Download(DateOnly date, string wodType,
 			IWodDownloadCancellationChecker? cancellationChecker, CancellationToken cancellationToken)
@@ -56,7 +57,7 @@ namespace C2Stats.Services
 			{
 				if (item.Id != null)
 				{
-					profileCache.TryGetProfile(item.Id.Value, out var profile);
+					profileFileStorage.TryGetProfile(item.Id.Value, out var profile);
 						
 					if (item.Country == countryProvider.UnaffiliatedCountryPlaceholder)
 					{
@@ -90,7 +91,7 @@ namespace C2Stats.Services
 					var countryResult = await Download(date, wodType, unaffiliatedCountry.Id, null, cancellationChecker, cancellationToken);
 
 					// download cancelled
-					if (countryResult == null) return null;
+					if (countryResult == null) continue;
 				
 					foreach (var countryItem in countryResult.Items)
 					{
@@ -130,7 +131,7 @@ namespace C2Stats.Services
 			{
 				if (item.Id != null)
 				{
-					profileCache.UpdatedProfile(new Profile
+					profileFileStorage.UpdatedProfile(new DbProfile
 					{
 						Id = item.Id.Value,
 						Name = item.Name,
