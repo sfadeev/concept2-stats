@@ -40,7 +40,7 @@ namespace C2Stats.Services
 	}
 	
 	public class WodDownloader(ILogger<WodDownloader> logger, IHttpClientFactory httpClientFactory,
-		IWodParser parser, ICountryProvider countryProvider, IProfileFileStorage profileFileStorage) : IWodDownloader
+		IWodParser parser, IProfileFileStorage profileFileStorage) : IWodDownloader
 	{
 		public async Task<WodResult?> Download(DateOnly date, string wodType,
 			IWodDownloadCancellationChecker? cancellationChecker, CancellationToken cancellationToken)
@@ -59,7 +59,7 @@ namespace C2Stats.Services
 				{
 					profileFileStorage.TryGetProfile(item.Id.Value, out var profile);
 						
-					if (item.Country == countryProvider.UnaffiliatedCountryPlaceholder)
+					if (item.Country == UnaffiliatedCountry.Placeholder)
 					{
 						if (profile?.Country != null)
 						{
@@ -84,7 +84,7 @@ namespace C2Stats.Services
 			
 			if (unaffCount > 0)
 			{
-				foreach (var unaffiliatedCountry in countryProvider.GetUnaffiliatedCountries())
+				foreach (var unaffiliatedCountry in UnaffiliatedCountry.GetList())
 				{
 					if (unaffCount <= 0) break;
 					

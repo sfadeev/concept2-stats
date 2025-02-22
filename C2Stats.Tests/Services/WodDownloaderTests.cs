@@ -22,8 +22,7 @@ namespace C2Stats.Tests.Services
 			var cancellationToken = CancellationToken.None;
 			var options = Options.Create(new AppOptions());
 			var downloader = new WodDownloader(NullLogger<WodDownloader>.Instance, httpClientFactoryMoq.Object,
-				new WodParser(), new DefaultCountryProvider(),
-				new ProfileFileStorage(NullLogger<ProfileFileStorage>.Instance, options, mediatorMoq.Object));
+				new WodParser(), new ProfileFileStorage(NullLogger<ProfileFileStorage>.Instance, options, mediatorMoq.Object));
 			
 			// act
 			var result = await downloader.Download(DateOnly.Parse(date), wodType, null, cancellationToken);

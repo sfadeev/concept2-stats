@@ -50,10 +50,12 @@ namespace C2Stats
 					.AddSingleton<IProfileFileStorage, ProfileFileStorage>()
 					
 					.AddTransient<ITimeZoneDateProvider, SimpleTimeZoneDateProvider>()
-					.AddTransient<ICountryProvider, DefaultCountryProvider>()
+					// .AddTransient<ICountryProvider, DefaultCountryProvider>()
+					.AddTransient<ICountryDownloader, CountryDownloader>()
 					.AddTransient<IWodFileStorage, WodFileStorage>()
 					.AddTransient<IWodDownloader, WodDownloader>()
 					.AddTransient<IWodParser, WodParser>()
+					.AddTransient<ICountryDbStorage, CountryDbStorage>()
 					.AddTransient<IProfileDbStorage, ProfileDbStorage>()
 					.AddTransient<IWodStatsService, DefaultWodStatsService>()
 					

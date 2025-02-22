@@ -1,16 +1,12 @@
 using System.Reflection;
 using System.Text.Json;
-using C2Stats.Models;
+using C2Stats.Entities;
 
 namespace C2Stats.Services
 {
 	public interface ICountryProvider
 	{
-		string UnaffiliatedCountryPlaceholder { get; }
-		
-		IEnumerable<Country> GetAllCountries();
-
-		IEnumerable<Country> GetUnaffiliatedCountries();
+		IEnumerable<DbCountry> GetAllCountries();
 		
 		int? GetCountryId(string code);
 	}
@@ -19,21 +15,9 @@ namespace C2Stats.Services
 	{
 		private readonly Lazy<CountryCache> _cache = new(BuildCountryCache);
 
-		public string UnaffiliatedCountryPlaceholder => "UNAFF";
-
-		public IEnumerable<Country> GetAllCountries()
+		public IEnumerable<DbCountry> GetAllCountries()
 		{
 			return _cache.Value.Countries;
-		}
-
-		public IEnumerable<Country> GetUnaffiliatedCountries()
-		{
-			return new List<Country>
-			{
-				// countries with more results should be first to minimize downloads
-				new() { Id = 178, Code = "RUS" },
-				new() { Id = 20, Code = "BLR" }
-			};
 		}
 		
 		public int? GetCountryId(string code)
@@ -50,7 +34,7 @@ namespace C2Stats.Services
 		{
 			var json = ReadResourceFile(Assembly.GetExecutingAssembly(), "C2Stats.Resources.countries.json");
 
-			var countries = JsonSerializer.Deserialize<Country[]>(json)!;
+			var countries = JsonSerializer.Deserialize<DbCountry[]>(json)!;
 
 			return new CountryCache
 			{
@@ -72,9 +56,9 @@ namespace C2Stats.Services
 
 		private class CountryCache
 		{
-			public required Country[] Countries { get; init; }
+			public required DbCountry[] Countries { get; init; }
 			
-			public required IDictionary<string, Country> CountryCodeMap { get; init; }
+			public required IDictionary<string, DbCountry> CountryCodeMap { get; init; }
 		}
 	}
 }

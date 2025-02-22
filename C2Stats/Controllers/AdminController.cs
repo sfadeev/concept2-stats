@@ -4,8 +4,16 @@ using Microsoft.AspNetCore.Mvc;
 namespace C2Stats.Controllers
 {
 	[ApiController, Route("api/admin/[action]")]
-	public class AdminController(IProfileDbStorage profileDbStorage) : ControllerBase
+	public class AdminController(ICountryDbStorage countryDbStorage, IProfileDbStorage profileDbStorage) : ControllerBase
 	{
+		[HttpGet]
+		public async Task<IActionResult> SyncCountries(CancellationToken cancellationToken)
+		{
+			await countryDbStorage.SyncAll(cancellationToken);
+
+			return Ok();
+		}
+		
 		[HttpGet]
 		public async Task<IActionResult> SyncProfiles(CancellationToken cancellationToken)
 		{

@@ -20,15 +20,22 @@ namespace C2Stats.Services
 			{
 				using (var db = new DataConnection())
 				{
-					var result = await db.GetTable<DbProfile>()
+					var table = db.GetTable<DbProfile>();
+					
+					var result = await table
 						.Merge()
 						.Using(profiles)
 						.OnTargetKey()
 						.UpdateWhenMatched()
 						.InsertWhenNotMatched()
 						.MergeAsync(cancellationToken);
-					
-					logger.LogInformation("Merged {Count} profiles to db", result);
+
+					if (logger.IsEnabled(LogLevel.Information))
+					{
+						var count = await table.CountAsync(cancellationToken);
+
+						logger.LogInformation("Merged {MergedCount} profiles to db, total {TotalCount} profiles", result, count);	
+					}
 					
 					return result;
 				}
