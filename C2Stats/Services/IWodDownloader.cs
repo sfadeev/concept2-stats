@@ -136,7 +136,8 @@ namespace C2Stats.Services
 						Id = item.Id.Value,
 						Name = item.Name,
 						Country = item.Country,
-						Sex = item.Sex
+						Sex = item.Sex,
+						Location = item.Location
 					});
 				}
 			}

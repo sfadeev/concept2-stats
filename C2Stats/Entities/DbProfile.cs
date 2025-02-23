@@ -17,5 +17,8 @@ namespace C2Stats.Entities
 		
 		[Column("sex", DataType = DataType.VarChar, Length = 1), NotNull]
 		public string? Sex { get; set; }
+		
+		[Column("location", DataType = DataType.VarChar, Length = 256), Nullable]
+		public string? Location { get; set; }
 	}
 }
