@@ -8,7 +8,7 @@ namespace C2Stats.Services.Jobs
 		: AbstractJob(logger, healthcheckService)
 	{
 		// number of yesterdays to re-download - in case some devices were offline and submitted logs later
-		private const int MaxDayCount = 3;
+		private const int MaxDayCount = 7;
 		
 		protected override async Task ExecuteAsync(CancellationToken cancellationToken)
 		{
