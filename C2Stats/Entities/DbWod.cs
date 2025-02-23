@@ -53,6 +53,6 @@ namespace C2Stats.Entities
 		public int? ResultMeters { get; set; }
 
 		[Column("pace", DataType = DataType.Interval)]
-		public TimeSpan Pace { get; set; }
+		public TimeSpan? Pace { get; set; }
 	}
 }

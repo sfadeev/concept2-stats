@@ -38,7 +38,7 @@ namespace C2Stats.Services
 					Age = (short?)x.Age,
 					ResultTime = x.ResultTime,
 					ResultMeters = x.ResultMeters,
-					Pace = x.Pace!.Value
+					Pace = x.Pace
 				}).ToList();
 				
 				using (var db = new DataConnection())
