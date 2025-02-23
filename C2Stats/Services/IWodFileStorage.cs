@@ -2,6 +2,8 @@ using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using C2Stats.Models;
+using C2Stats.Notifications;
+using MediatR;
 using Microsoft.Extensions.Options;
 
 namespace C2Stats.Services
@@ -13,8 +15,8 @@ namespace C2Stats.Services
 		Task DownloadAndStoreIfNotExists(DateOnly date, CancellationToken cancellationToken);
 	}
 	
-	public class WodFileStorage(ILogger<WodFileStorage> logger, IProfileFileStorage profileFileStorage,
-		IOptions<AppOptions> appOptions, IWodDownloader wodDownloader) : IWodFileStorage
+	public class WodFileStorage(ILogger<WodFileStorage> logger,
+		IOptions<AppOptions> appOptions, IWodDownloader wodDownloader, IPublisher mediator) : IWodFileStorage
 	{
 		private static readonly string[] DownloadedWodTypes = [ WodType.RowErg, WodType.BikeErg, WodType.SkiErg ];
 		
@@ -92,17 +94,17 @@ namespace C2Stats.Services
 				Directory.CreateDirectory(Path.GetDirectoryName(path)!);
 
 				var json = JsonSerializer.Serialize(wod, JsonOptions);
-
-				profileFileStorage.Persist();
 				
 				await File.WriteAllTextAsync(path, json, cancellationToken);
-
+				
 				if (logger.IsEnabled(LogLevel.Information))
 				{
 					logger.LogInformation(
 						"File {Path} saved, elapsed {Elapsed} ({ItemCount} items, {FileSize} bytes)",
 						path, sw.Elapsed, wod.Items.Count, json.Length);
 				}
+				
+				await mediator.Publish(new WodFileUpdated { Wod = wod }, cancellationToken);
 			}
 		}
 		

@@ -15,9 +15,11 @@ namespace C2Stats.Services
 		
 		bool TryGetProfile(int profileId, out DbProfile? profile);
 		
-		bool UpdatedProfile(DbProfile profile);
+		// bool UpdatedProfile(DbProfile profile);
 		
-		void Persist();
+		// void Persist();
+		
+		void UpdateFrom(WodResult wod);
 	}
 
 	public class ProfileFileStorage(
@@ -86,6 +88,23 @@ namespace C2Stats.Services
 			return ProfileMap.TryGetValue(profileId, out profile);
 		}
 
+		public void UpdateFrom(WodResult wod)
+		{
+			foreach (var item in wod.Items.Where(x => x.Id != null))
+			{
+				UpdatedProfile(new DbProfile
+				{
+					Id = item.Id!.Value,
+					Name = item.Name,
+					Country = item.Country,
+					Sex = item.Sex,
+					Location = item.Location
+				});
+			}
+			
+			Persist();
+		}
+		
 		public bool UpdatedProfile(DbProfile profile)
 		{
 			lock (_lock)
@@ -137,7 +156,7 @@ namespace C2Stats.Services
 							path, profiles.Length, _added.Count, _updated.Count);
 					}
 					
-					mediator.Publish(new ProfilesUpdated
+					mediator.Publish(new ProfilesFileUpdated
 					{
 						Updated = _added.Union(_updated).Select(id => map[id]).ToList()
 					});
@@ -147,7 +166,7 @@ namespace C2Stats.Services
 				}
 			}
 		}
-		
+
 		private string GetFilePath()
 		{
 			var options = appOptions.Value;

@@ -4,12 +4,11 @@ namespace C2Stats.Services.Jobs
 {
 	[DisallowConcurrentExecution]
 	public class DownloadCurrentWodJob(ILogger<DownloadCurrentWodJob> logger,
-		IHealthcheckService healthcheckService, ITimeZoneDateProvider timeZoneDateProvider, IWodFileStorage wodFileStorage) : AbstractJob(logger)
+		IHealthcheckService healthcheckService, ITimeZoneDateProvider timeZoneDateProvider, IWodFileStorage wodFileStorage) 
+		: AbstractJob(logger, healthcheckService)
 	{
 		protected override async Task ExecuteAsync(CancellationToken cancellationToken)
 		{
-			await healthcheckService.Success(cancellationToken);
-			
 			foreach (var date in timeZoneDateProvider.GetDatesInAllTimeZones(DateTime.UtcNow))
 			{
 				if (cancellationToken.IsCancellationRequested)

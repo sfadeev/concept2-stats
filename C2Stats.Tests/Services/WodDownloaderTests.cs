@@ -32,7 +32,7 @@ namespace C2Stats.Tests.Services
 			Assert.That(result.TotalCount, Is.Not.Null);
 			Assert.That(result.TotalCount, Is.GreaterThan(0));
 			Assert.That(result.Items.Count, Is.GreaterThan(0));
-			Assert.That(result.Items.Count(x => x.Country == "UNAFF"), Is.EqualTo(0));
+			Assert.That(result.Items.Count(x => x.Country == UnaffiliatedCountry.Placeholder), Is.EqualTo(0));
 		}
 	}
 }

@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using C2Stats.Entities;
 using C2Stats.Models;
 using Microsoft.AspNetCore.Http.Extensions;
 
@@ -112,33 +111,19 @@ namespace C2Stats.Services
 				const string genderM = "M";
 				const string genderF = "F";
 				
-				var genderResult = await Download(date, wodType, null, genderF, cancellationChecker, cancellationToken);
+				var femaleResult = await Download(date, wodType, null, genderF, cancellationChecker, cancellationToken);
 
 				// download cancelled
-				if (genderResult == null) return null;
-
-				var womenIds = genderResult.Items.Where(x => x.Id != null).Select(x => x.Id!.Value).ToList();
+				if (femaleResult != null)
+				{
+					var femaleIds = femaleResult.Items.Where(x => x.Id != null).Select(x => x.Id!.Value).ToList();
 				
-				var genderUnknown = result.Items.Where(x => x.Id != null && x.Sex == null).ToList();
+					var genderUnknown = result.Items.Where(x => x.Id != null && x.Sex == null).ToList();
 
-				foreach (var genderItem in genderUnknown)
-				{
-					genderItem.Sex = womenIds.Contains(genderItem.Id!.Value) ? genderF : genderM;
-				}
-			}
-
-			foreach (var item in result.Items)
-			{
-				if (item.Id != null)
-				{
-					profileFileStorage.UpdatedProfile(new DbProfile
+					foreach (var item in genderUnknown)
 					{
-						Id = item.Id.Value,
-						Name = item.Name,
-						Country = item.Country,
-						Sex = item.Sex,
-						Location = item.Location
-					});
+						item.Sex = femaleIds.Contains(item.Id!.Value) ? genderF : genderM;
+					}
 				}
 			}
 			

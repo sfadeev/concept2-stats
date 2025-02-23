@@ -11,8 +11,7 @@ namespace C2Stats.Services
 		Task<int> SyncAll(CancellationToken cancellationToken);
 	}
 
-	public class ProfileDbStorage(
-		ILogger<ProfileDbStorage> logger, IProfileFileStorage profileFileStorage) : IProfileDbStorage
+	public class ProfileDbStorage(ILogger<ProfileDbStorage> logger, IProfileFileStorage profileFileStorage) : IProfileDbStorage
 	{
 		public async Task<int> Sync(ICollection<DbProfile> profiles, CancellationToken cancellationToken)
 		{
@@ -20,9 +19,7 @@ namespace C2Stats.Services
 			{
 				using (var db = new DataConnection())
 				{
-					var table = db.GetTable<DbProfile>();
-					
-					var result = await table
+					var result = await db.GetTable<DbProfile>()
 						.Merge()
 						.Using(profiles)
 						.OnTargetKey()
@@ -32,9 +29,9 @@ namespace C2Stats.Services
 
 					if (logger.IsEnabled(LogLevel.Information))
 					{
-						var count = await table.CountAsync(cancellationToken);
+						var count = await db.GetTable<DbProfile>().CountAsync(cancellationToken);
 
-						logger.LogInformation("Merged {MergedCount} profiles to db, total {TotalCount} profiles", result, count);	
+						logger.LogInformation("Merged {MergedCount} profile(s) to database, total {TotalCount} profile(s)", result, count);	
 					}
 					
 					return result;
@@ -42,9 +39,9 @@ namespace C2Stats.Services
 			}
 			catch (Exception ex)
 			{
-				logger.LogError(ex, "Failed to merge profiles to db - {ErrorMessage}", ex.Message);
+				logger.LogError(ex, "Failed to save profiles to database - {ErrorMessage}", ex.Message);
 
-				throw;
+				return -1;
 			}
 		}
 

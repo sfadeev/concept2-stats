@@ -4,7 +4,8 @@ namespace C2Stats.Services.Jobs
 {
 	[DisallowConcurrentExecution]
 	public class DownloadArchiveWodJob(ILogger<DownloadArchiveWodJob> logger,
-		IHealthcheckService healthcheckService, IWodFileStorage wodFileStorage) : AbstractJob(logger)
+		IHealthcheckService healthcheckService, IWodFileStorage wodFileStorage) 
+		: AbstractJob(logger, healthcheckService)
 	{
 		private static readonly DateOnly FirstWodDate = new(2022, 7, 8); // Jul 8 2022 is the date of first WoD
 
@@ -12,8 +13,6 @@ namespace C2Stats.Services.Jobs
 
 		protected override async Task ExecuteAsync(CancellationToken cancellationToken)
 		{
-			await healthcheckService.Success(cancellationToken);
-			
 			// begin from day before yesterday - current date will be downloaded by other jobs
 			var now = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-2);
 			

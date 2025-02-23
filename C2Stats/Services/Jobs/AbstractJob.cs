@@ -3,10 +3,12 @@ using Quartz;
 
 namespace C2Stats.Services.Jobs
 {
-	public abstract class AbstractJob(ILogger logger) : IJob
+	public abstract class AbstractJob(ILogger logger, IHealthcheckService healthcheckService) : IJob
 	{
 		public async Task Execute(IJobExecutionContext context)
 		{
+			await healthcheckService.Success(context.CancellationToken);
+			
 			var sw = Stopwatch.StartNew();
 			
 			await ExecuteAsync(context.CancellationToken);

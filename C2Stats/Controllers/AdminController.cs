@@ -9,17 +9,17 @@ namespace C2Stats.Controllers
 		[HttpGet]
 		public async Task<IActionResult> SyncCountries(CancellationToken cancellationToken)
 		{
-			await countryDbStorage.SyncAll(cancellationToken);
+			var result = await countryDbStorage.SyncAll(cancellationToken);
 
-			return Ok();
+			return Ok(result);
 		}
 		
 		[HttpGet]
 		public async Task<IActionResult> SyncProfiles(CancellationToken cancellationToken)
 		{
-			await profileDbStorage.SyncAll(cancellationToken);
+			var result = await profileDbStorage.SyncAll(cancellationToken);
 
-			return Ok();
+			return Ok(result);
 		}		
 	}
 }
