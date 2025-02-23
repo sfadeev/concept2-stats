@@ -13,6 +13,21 @@ namespace C2Stats.Services
 		Task DownloadAndStoreActual(DateOnly date, CancellationToken cancellationToken);
 		
 		Task DownloadAndStoreIfNotExists(DateOnly date, CancellationToken cancellationToken);
+		
+		Task<ICollection<WodFileInfo>> GetWodFiles(CancellationToken cancellationToken);
+		
+		Task<WodResult> GetWodResult(DateOnly date, string wodType, CancellationToken cancellationToken);
+	}
+	
+	public class WodFileInfo
+	{
+		public required string Path { get; set; }
+		
+		public DateOnly Date { get; set; }
+		
+		public required string Type { get; set; }
+		
+		public DateTime? LastModified { get; set; }
 	}
 	
 	public class WodFileStorage(ILogger<WodFileStorage> logger,
@@ -34,6 +49,48 @@ namespace C2Stats.Services
 		public Task DownloadAndStoreIfNotExists(DateOnly date, CancellationToken cancellationToken)
 		{
 			return DownloadAndStoreInParallel(date, false, cancellationToken);
+		}
+
+		public Task<ICollection<WodFileInfo>> GetWodFiles(CancellationToken cancellationToken)
+		{
+			var options = appOptions.Value;
+
+			var wodDir = Path.Combine(options.ParseDirPath, "wod/");
+			
+			var files = Directory.EnumerateFiles(wodDir, "*.json", SearchOption.AllDirectories);
+
+			var result = new List<WodFileInfo>();
+			
+			foreach (var file in files)
+			{
+				var fi = new FileInfo(file);
+
+				if (DateOnly.TryParse(fi.Name[..10], out var date))
+				{
+					result.Add(new WodFileInfo
+					{
+						Path = file,
+						Date = date,
+						Type = fi.Name.Substring(
+							fi.Name.LastIndexOf('-') + 1, 
+							fi.Name.IndexOf('.') - fi.Name.LastIndexOf('-') - 1),
+						LastModified = fi.LastWriteTime
+					});
+				}
+			}
+
+			return Task.FromResult<ICollection<WodFileInfo>>(result);
+		}
+
+		public async Task<WodResult> GetWodResult(DateOnly date, string wodType, CancellationToken cancellationToken)
+		{
+			var path = GetFilePath(date, wodType);
+			
+			var json = await File.ReadAllTextAsync(path, cancellationToken);
+				
+			var wod = JsonSerializer.Deserialize<WodResult>(json, JsonOptions);
+			
+			return wod!;
 		}
 
 		private async Task DownloadAndStoreInParallel(DateOnly date, bool overwriteIfExists, CancellationToken cancellationToken)

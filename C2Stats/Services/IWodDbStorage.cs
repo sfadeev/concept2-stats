@@ -8,6 +8,8 @@ namespace C2Stats.Services
 	public interface IWodDbStorage
 	{
 		Task<int> Sync(WodResult wod, CancellationToken cancellationToken);
+		
+		int BuildWodId(DateOnly date, string wodType);
 	}
 
 	public class WodDbStorage(ILogger<WodDbStorage> logger) : IWodDbStorage
@@ -18,7 +20,7 @@ namespace C2Stats.Services
 			{
 				var dbWod = new DbWod
 				{
-					Id = BuildWodId(wod),
+					Id = BuildWodId(wod.Date!.Value, wod.Type!),
 					Date = wod.Date!.Value,
 					Type = wod.Type,
 					Name = wod.Name,
@@ -27,10 +29,11 @@ namespace C2Stats.Services
 					LastModified = DateTime.UtcNow
 				};
 
-				var dbWodItems = wod.Items.Select(x => new DbWodItem
+				var dbWodItems = wod.Items.Select((x, i) => new DbWodItem
 				{
 					WodId = dbWod.Id,
 					ProfileId = x.Id!.Value,
+					No = i + 1,
 					Position = x.Position!.Value,
 					Age = (short?)x.Age,
 					ResultTime = x.ResultTime,
@@ -46,11 +49,8 @@ namespace C2Stats.Services
 					
 					if (logger.IsEnabled(LogLevel.Information))
 					{
-						var count = await db.GetTable<DbWodItem>().Where(x => x.WodId == dbWod.Id).CountAsync(cancellationToken);
-
 						logger.LogInformation(
-							"WoD {Date} {WodType} saved to database - merged {MergedCount} item(s), total {TotalCount} item(s)",
-							wod.Date, wod.Type, result, count);	
+							"WoD {Date} {WodType} saved to database - merged {MergedCount} item(s)", wod.Date, wod.Type, result);	
 					}
 					
 					return result;
@@ -63,20 +63,16 @@ namespace C2Stats.Services
 				return -1;
 			}
 		}
-		
-		public static int BuildWodId(WodResult wod)
-		{
-			var date = wod.Date!.Value;
 
-			var wodTypeId = wod.Type switch
+		public int BuildWodId(DateOnly date, string wodType)
+		{
+			return date.Year * 100000 + date.Month * 1000 + date.Day * 10 + wodType switch
 			{
 				WodType.RowErg => 1,
 				WodType.BikeErg => 2,
 				WodType.SkiErg => 3,
-				_ => throw new ArgumentOutOfRangeException(nameof(wod.Type), wod.Type, "Unknown wod type")
+				_ => throw new ArgumentOutOfRangeException(nameof(wodType), wodType, "Unknown wod type")
 			};
-
-			return date.Year * 100000 + date.Month * 1000 + date.Day * 10 + wodTypeId;
 		}
 	}
 }

@@ -24,8 +24,8 @@ namespace C2Stats.Entities
 		[Column("total_count"), Nullable]
 		public int? TotalCount { get; set; }
 		
-		[Column("last_modified", DataType = DataType.Timestamp), NotNull]
-		public DateTime LastModified { get; set; }
+		[Column("last_modified", DataType = DataType.Timestamp), Nullable]
+		public DateTime? LastModified { get; set; }
 	}
 	
 	[Table("wod_item")]
@@ -37,6 +37,9 @@ namespace C2Stats.Entities
 		[Column("profile_id"), PrimaryKey(2)]
 		public int ProfileId { get; set; }
 
+		[Column("no")]
+		public int No { get; set; }
+		
 		[Column("position")]
 		public int Position { get; set; } 
 		

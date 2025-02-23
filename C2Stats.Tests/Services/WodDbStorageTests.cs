@@ -1,5 +1,6 @@
 using C2Stats.Models;
 using C2Stats.Services;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace C2Stats.Tests.Services
 {
@@ -12,10 +13,10 @@ namespace C2Stats.Tests.Services
 		public void BuildWodId_NormalState_ShouldWork(string date, string wodType, int expectedId)
 		{
 			// arrange
-			var wod = new WodResult { Date = DateOnly.Parse(date), Type = wodType };
+			var service = new WodDbStorage(NullLogger<WodDbStorage>.Instance);
 			
 			// act
-			var id = WodDbStorage.BuildWodId(wod);
+			var id = service.BuildWodId(DateOnly.Parse(date), wodType);
 			
 			// assert
 			Assert.That(id, Is.EqualTo(expectedId));
