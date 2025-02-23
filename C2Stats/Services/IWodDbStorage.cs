@@ -40,28 +40,16 @@ namespace C2Stats.Services
 				
 				using (var db = new DataConnection())
 				{
-					await db.GetTable<DbWod>()
-						.Merge()
-						.Using([dbWod])
-						.OnTargetKey()
-						.UpdateWhenMatched()
-						.InsertWhenNotMatched()
-						.MergeAsync(cancellationToken);
+					await db.GetTable<DbWod>().MergeOnPk([dbWod], cancellationToken);
 					
-					var result = await db.GetTable<DbWodItem>()
-						.Merge()
-						.Using(dbWodItems)
-						.OnTargetKey()
-						.UpdateWhenMatched()
-						.InsertWhenNotMatched()
-						.MergeAsync(cancellationToken);
+					var result = await db.GetTable<DbWodItem>().MergeOnPk(dbWodItems, cancellationToken);
 					
 					if (logger.IsEnabled(LogLevel.Information))
 					{
 						var count = await db.GetTable<DbWodItem>().Where(x => x.WodId == dbWod.Id).CountAsync(cancellationToken);
 
 						logger.LogInformation(
-							"Saved {Date} {WodType} WoD to database - merged {MergedCount} item(s), total {TotalCount} item(s)",
+							"WoD {Date} {WodType} saved to database - merged {MergedCount} item(s), total {TotalCount} item(s)",
 							wod.Date, wod.Type, result, count);	
 					}
 					
@@ -80,7 +68,7 @@ namespace C2Stats.Services
 		{
 			var date = wod.Date!.Value;
 
-			var widTypeId = wod.Type switch
+			var wodTypeId = wod.Type switch
 			{
 				WodType.RowErg => 1,
 				WodType.BikeErg => 2,
@@ -88,7 +76,7 @@ namespace C2Stats.Services
 				_ => throw new ArgumentOutOfRangeException(nameof(wod.Type), wod.Type, "Unknown wod type")
 			};
 
-			return date.Year * 100000 + date.Month * 1000 + date.Day * 10 + widTypeId;
+			return date.Year * 100000 + date.Month * 1000 + date.Day * 10 + wodTypeId;
 		}
 	}
 }

@@ -27,21 +27,13 @@ namespace C2Stats.Services
 
 				using (var db = new DataConnection())
 				{
-					var table = db.GetTable<DbCountry>();
-					
-					var result = await table
-						.Merge()
-						.Using(countries)
-						.OnTargetKey()
-						.UpdateWhenMatched()
-						.InsertWhenNotMatched()
-						.MergeAsync(cancellationToken);
+					var result = await db.GetTable<DbCountry>().MergeOnPk(countries, cancellationToken);
 
 					if (logger.IsEnabled(LogLevel.Information))
 					{
-						var count = await table.CountAsync(cancellationToken);
+						var count = await db.GetTable<DbCountry>().CountAsync(cancellationToken);
 
-						logger.LogInformation("Merged {MergedCount} countries to db, total {TotalCount} countries", result, count);	
+						logger.LogInformation("Merged {MergedCount} countrie(s) to database, total {TotalCount} countries", result, count);	
 					}
 					
 					return result;
