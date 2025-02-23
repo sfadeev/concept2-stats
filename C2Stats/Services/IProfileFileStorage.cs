@@ -103,10 +103,10 @@ namespace C2Stats.Services
 				}
 				else
 				{
-					map[profile.Id] = profile;
-					
 					_added.Add(profile.Id);
 				}
+				
+				map[profile.Id] = profile;
 				
 				return true;
 			}
