@@ -96,7 +96,8 @@ namespace C2Stats.Services
 				{
 					if (profile.Name == existing.Name &&
 					    profile.Country == existing.Country &&
-					    profile.Sex == existing.Sex) return false;
+					    profile.Sex == existing.Sex &&
+					    profile.Location == existing.Location) return false;
 					
 					_updated.Add(profile.Id);
 				}
