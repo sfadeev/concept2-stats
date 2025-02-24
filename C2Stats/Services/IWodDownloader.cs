@@ -60,7 +60,7 @@ namespace C2Stats.Services
 						
 					if (item.Country == UnaffiliatedCountry.Placeholder)
 					{
-						if (profile?.Country != null)
+						if (profile?.Country != null && profile.Country != UnaffiliatedCountry.Placeholder)
 						{
 							item.Country = profile.Country;
 						}
@@ -69,8 +69,8 @@ namespace C2Stats.Services
 							unaffCount++;
 						}
 					}
-
-					if (profile != null)
+					
+					if (profile?.Sex != null)
 					{
 						item.Sex = profile.Sex;
 					}
@@ -96,7 +96,7 @@ namespace C2Stats.Services
 					{
 						var item = result.Items.SingleOrDefault(x => x.Id == countryItem.Id);
 
-						if (item != null)
+						if (item?.Country == UnaffiliatedCountry.Placeholder)
 						{
 							item.Country = unaffiliatedCountry.Code;
 							
