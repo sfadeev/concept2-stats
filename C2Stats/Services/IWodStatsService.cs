@@ -1,3 +1,7 @@
+using C2Stats.Entities;
+using LinqToDB;
+using LinqToDB.Data;
+
 namespace C2Stats.Services
 {
 	public interface IWodStatsService
@@ -22,7 +26,7 @@ namespace C2Stats.Services
 	{
 		public DateOnly Day { get; set; }
 		
-		public int Value { get; set; }
+		public int? Value { get; set; }
 	}
 
 	public class DayData
@@ -43,30 +47,21 @@ namespace C2Stats.Services
 	
 	public class DefaultWodStatsService : IWodStatsService
 	{
-		public Task<CalendarData> GetYear(int year, string wodType, CancellationToken cancellationToken)
+		public async Task<CalendarData> GetYear(int year, string wodType, CancellationToken cancellationToken)
 		{
-			var data = new List<CalendarDatum>();
-
-			var random = new Random();
-
-			var day = new DateOnly(year, 1, 1);
-
-			while (day.Year == year)
+			using (var db = new DataConnection())
 			{
-				data.Add(new CalendarDatum { Day = day, Value = random.Next(100) });
-
-				day = day.AddDays(1);
+				return new CalendarData
+				{
+					WodType = wodType,
+					From = new DateOnly(year, 1, 1),
+					To = new DateOnly(year, 12, 31),
+					Data = await db.GetTable<DbWod>()
+						.Where(x => x.Date.Year == year && x.Type == wodType && x.TotalCount != null)
+						.Select(x => new CalendarDatum { Day = x.Date, Value = x.TotalCount })
+						.ToArrayAsync(cancellationToken)
+				};
 			}
-			
-			var result = new CalendarData
-			{
-				WodType = wodType,
-				From = new DateOnly(year, 1, 1),
-				To = new DateOnly(year, 12, 31),
-				Data = data.ToArray()
-			};
-			
-			return Task.FromResult(result);
 		}
 
 		public Task<DayData> GetDay(DateOnly day, string wodType, CancellationToken cancellationToken)

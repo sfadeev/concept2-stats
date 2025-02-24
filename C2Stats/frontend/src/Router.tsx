@@ -6,7 +6,7 @@ import Home from './pages/Home';
 const AppRouter: React.FC = () => {
     return (
         <Router>
-            <nav>
+            <nav style={{ display: 'none' }}>
                 <ul>
                     <li><Link to="/">Home</Link></li>
                     <li><Link to="/about">About</Link></li>
