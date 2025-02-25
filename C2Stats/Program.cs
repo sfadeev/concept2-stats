@@ -58,7 +58,7 @@ namespace C2Stats
 					.AddTransient<ICountryDbStorage, CountryDbStorage>()
 					.AddTransient<IProfileDbStorage, ProfileDbStorage>()
 					.AddTransient<IWodDbStorage, WodDbStorage>()
-					.AddTransient<IWodStatsService, DefaultWodStatsService>()
+					.AddTransient<IWodStatsService, WodStatsService>()
 					
 					.AddQuartz(quartz =>
 					{

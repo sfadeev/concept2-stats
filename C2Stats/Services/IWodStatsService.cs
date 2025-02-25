@@ -45,7 +45,7 @@ namespace C2Stats.Services
 		public int Count { get; set; }
 	}
 	
-	public class DefaultWodStatsService : IWodStatsService
+	public class WodStatsService : IWodStatsService
 	{
 		public async Task<CalendarData> GetYear(int year, string wodType, CancellationToken cancellationToken)
 		{
