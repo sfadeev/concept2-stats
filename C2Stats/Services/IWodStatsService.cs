@@ -51,15 +51,17 @@ namespace C2Stats.Services
 		{
 			using (var db = new DataConnection())
 			{
+				var data = await db.GetTable<DbWod>()
+					.Where(x => /*x.Date.Year == year &&*/ x.Type == wodType && x.TotalCount != null)
+					.Select(x => new CalendarDatum { Day = x.Date, Value = x.TotalCount })
+					.ToArrayAsync(cancellationToken);
+				
 				return new CalendarData
 				{
 					WodType = wodType,
-					From = new DateOnly(year, 1, 1),
-					To = new DateOnly(year, 12, 31),
-					Data = await db.GetTable<DbWod>()
-						.Where(x => x.Date.Year == year && x.Type == wodType && x.TotalCount != null)
-						.Select(x => new CalendarDatum { Day = x.Date, Value = x.TotalCount })
-						.ToArrayAsync(cancellationToken)
+					From = data.Min(x => x.Day),
+					To = data.Max(x => x.Day),
+					Data = data
 				};
 			}
 		}

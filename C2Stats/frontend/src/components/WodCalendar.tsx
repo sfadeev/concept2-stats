@@ -9,7 +9,7 @@ export interface WodCalendarProps {
 // https://nivo.rocks/calendar/
 export default ({ from, to, data }: WodCalendarProps) => (
 
-    <div style={{ width: "100%", height: 200 }}>
+    <div style={{ width: "100%", height: 500 }}>
 
         <ResponsiveCalendar
             data={data ?? []}
