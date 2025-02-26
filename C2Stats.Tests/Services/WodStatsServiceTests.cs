@@ -17,5 +17,18 @@ namespace C2Stats.Tests.Services
 			// assert
 			Assert.That(result, Is.Not.Null);
 		}
+		
+		[Test, CancelAfter(1000)]
+		public async Task GetDay_NormalState_ShouldWork(CancellationToken cancellationToken = default)
+		{
+			// arrange
+			var service = new WodStatsService();
+			
+			// act
+			var result = await service.GetDay(DateOnly.FromDateTime(DateTime.UtcNow), WodType.RowErg, cancellationToken);
+			
+			// assert
+			Assert.That(result, Is.Not.Null);
+		}
 	}
 }

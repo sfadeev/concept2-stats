@@ -66,29 +66,36 @@ namespace C2Stats.Services
 			}
 		}
 
-		public Task<DayData> GetDay(DateOnly day, string wodType, CancellationToken cancellationToken)
+		public async Task<DayData> GetDay(DateOnly day, string wodType, CancellationToken cancellationToken)
 		{
-			var data = new List<DayDatum>();
-			
-			var random = new Random();
+			using (var db = new DataConnection())
+			{
+				var data = await
+				(
+					from w in db.GetTable<DbWod>()
+						.Where(x => x.Date == day && x.Type == wodType)
+					join wi in db.GetTable<DbWodItem>().Where(x => x.Pace.HasValue)
+						on w.Id equals wi.WodId
+					select new { Pace = wi.Pace.Value }
+				).ToListAsync(cancellationToken);
 
-			var pace = new TimeSpan(0, 0, 1, 20);
-			
-			for (var i = 0; i < 100; i++)
-			{
-				data.Add(new DayDatum { Pace = pace, Count = random.Next(100) });
-				
-				pace = pace.Add(TimeSpan.FromSeconds(1));
+				var grouped =
+					from x in data
+					group x by Math.Floor(x.Pace.TotalSeconds)
+					into g
+					select new { Pace = g.Key, Count = g.Count() };
+
+				return new DayData
+				{
+					WodType = wodType,
+					Day = day,
+					Data = grouped.Select(x => new DayDatum
+					{
+						Pace = TimeSpan.FromSeconds(x.Pace),
+						Count = x.Count
+					}).OrderBy(x => x.Pace).ToArray()
+				};
 			}
-			
-			var result = new DayData
-			{
-				WodType = wodType,
-				Day = day,
-				Data = data.ToArray()
-			};
-			
-			return Task.FromResult(result);
 		}
 	}
 }

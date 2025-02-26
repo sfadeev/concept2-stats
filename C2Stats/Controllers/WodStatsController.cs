@@ -15,9 +15,9 @@ namespace C2Stats.Controllers
 		}
 		
 		[HttpGet]
-		public async Task<IActionResult> Day(string wodType, CancellationToken cancellationToken)
+		public async Task<IActionResult> Day(DateTime? date, string wodType, CancellationToken cancellationToken)
 		{
-			var day = DateOnly.FromDateTime(DateTime.UtcNow);
+			var day = DateOnly.FromDateTime(date ?? DateTime.UtcNow);
 			
 			var result = await wodStatsService.GetDay(day, wodType, cancellationToken);
 

@@ -4,9 +4,10 @@ import WodCalendar, { WodCalendarProps } from "./WodCalendar";
 export interface WodCalendarDataProps {
     year: number;
     wodType: string;
+    onClick?: ((date: Date, event: React.MouseEvent<SVGRectElement, MouseEvent>) => void) | undefined;
 }
 
-export default ({ year, wodType }: WodCalendarDataProps) => {
+export default ({ year, wodType, onClick }: WodCalendarDataProps) => {
 
     const [data, setData] = useState<WodCalendarProps | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -31,7 +32,12 @@ export default ({ year, wodType }: WodCalendarDataProps) => {
                 <p style={{ color: 'red' }}>{error}</p>
             ) : (
                 data ? (
-                    <WodCalendar from={data.from} to={data.to} data={data.data} />
+                    <WodCalendar
+                        from={data.from}
+                        to={data.to}
+                        data={data.data}
+                        onClick={(d, x) => { return (onClick ? onClick(d, x) : null); }}
+                    />
                 ) : (
                     <div>Loading...</div>
                 )

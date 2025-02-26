@@ -4,10 +4,11 @@ export interface WodCalendarProps {
     from: string;
     to: string;
     data: CalendarDatum[];
+    onClick?: ((date: Date, event: React.MouseEvent<SVGRectElement, MouseEvent>) => void) | undefined;
 }
 
 // https://nivo.rocks/calendar/
-export default ({ from, to, data }: WodCalendarProps) => (
+export default ({ from, to, data, onClick }: WodCalendarProps) => (
 
     <div style={{ width: "100%", height: 500 }}>
 
@@ -15,6 +16,7 @@ export default ({ from, to, data }: WodCalendarProps) => (
             data={data ?? []}
             from={from}
             to={to}
+            onClick={(d, x) => { return (onClick ? onClick(d.date, x) : null); }}
             emptyColor="#eeeeee"
             colors={['#61cdbb', '#97e3d5', '#e8c1a0', '#f47560']}
             margin={{ top: 40, right: 40, bottom: 40, left: 40 }}
