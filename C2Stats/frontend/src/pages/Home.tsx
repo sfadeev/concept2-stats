@@ -1,26 +1,47 @@
+import { Card, DatePicker, Segmented, Space } from 'antd';
+import dayjs from 'dayjs';
 import { useState } from 'react';
 import WodCalendarData from '../components/WodCalendarData';
 import WodDayBarData from '../components/WodDayBarData';
 
 export default () => {
 
-    const [date, setDate] = useState<Date | null>(null);
+    const [date, setDate] = useState<Date | null>(new Date());
+    const [type, setType] = useState<string | null>('rowerg');
 
-    return (
-        <div>
-            <h3>rowerg</h3>
-            <WodCalendarData year={2025} wodType='rowerg'
-                onClick={(d, x) => setDate(d)}
+    return (<>
+
+        <Space>
+            <DatePicker value={date ? dayjs(date) : null} onChange={(date, dateString) => {
+                setDate(date ? date.toDate() : null);
+            }} />
+
+            <Segmented<string>
+                options={[
+                    { value: 'rowerg', label: 'RowErg' },
+                    { value: 'bikeerg', label: 'BikeErg' },
+                    { value: 'skierg', label: 'SkiErg' },
+                ]}
+                onChange={(value) => setType(value)}
             />
+        </Space>
 
-            <WodDayBarData wodType='rowerg' date={date} />
+        {(date && type) ? (<>
+            <Card size='small' style={{ marginTop: 20 }}>
+                <div style={{ overflowX: 'auto', overflowY: 'hidden' }}>
+                    <WodCalendarData
+                        type={type}
+                        year={date.getFullYear()}
+                        onClick={(date, event) => {
+                            return setDate(date);
+                        }}
+                    />
+                </div>
 
-            <h3>bikeerg</h3>
-            <WodCalendarData year={2025} wodType='bikeerg' />
+                <WodDayBarData type={type} date={date} />
+            </Card>
 
-            <h3>skierg</h3>
-            <WodCalendarData year={2025} wodType='skierg' />
+        </>) : null}
 
-        </div>
-    );
+    </>);
 };

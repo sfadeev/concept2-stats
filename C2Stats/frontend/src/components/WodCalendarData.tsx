@@ -2,18 +2,18 @@ import { useEffect, useState } from "react";
 import WodCalendar, { WodCalendarProps } from "./WodCalendar";
 
 export interface WodCalendarDataProps {
+    type: string;
     year: number;
-    wodType: string;
     onClick?: ((date: Date, event: React.MouseEvent<SVGRectElement, MouseEvent>) => void) | undefined;
 }
 
-export default ({ year, wodType, onClick }: WodCalendarDataProps) => {
+export default ({ type, year, onClick }: WodCalendarDataProps) => {
 
     const [data, setData] = useState<WodCalendarProps | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        fetch(`/api/wod/year?year=${year}&wodType=${wodType}`)
+        fetch(`/api/wod/year?type=${type}&year=${year}`)
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Failed to fetch data');
@@ -24,7 +24,7 @@ export default ({ year, wodType, onClick }: WodCalendarDataProps) => {
                 setData(data);
             })
             .catch(err => setError('Error fetching data'));
-    }, []);
+    }, [type, year]);
 
     return (
         <>

@@ -10,12 +10,13 @@ export interface WodCalendarProps {
 // https://nivo.rocks/calendar/
 export default ({ from, to, data, onClick }: WodCalendarProps) => (
 
-    <div style={{ width: "100%", height: 500 }}>
+    <div style={{ width: 1080, height: 190 }}>
 
         <ResponsiveCalendar
             data={data ?? []}
             from={from}
             to={to}
+            align="left"
             onClick={(d, x) => { return (onClick ? onClick(d.date, x) : null); }}
             emptyColor="#eeeeee"
             colors={['#61cdbb', '#97e3d5', '#e8c1a0', '#f47560']}
