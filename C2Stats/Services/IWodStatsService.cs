@@ -42,7 +42,9 @@ namespace C2Stats.Services
 	{
 		public TimeSpan Pace { get; set; }
 		
-		public int Count { get; set; }
+		public int Male { get; set; }
+		
+		public int Female { get; set; }
 	}
 	
 	public class WodStatsService : IWodStatsService
@@ -76,14 +78,21 @@ namespace C2Stats.Services
 						.Where(x => x.Date == day && x.Type == wodType)
 					join wi in db.GetTable<DbWodItem>().Where(x => x.Pace.HasValue)
 						on w.Id equals wi.WodId
-					select new { Pace = wi.Pace.Value }
+					join p in db.GetTable<DbProfile>()
+						on wi.ProfileId equals p.Id
+					select new { Pace = wi.Pace.Value, p.Sex }
 				).ToListAsync(cancellationToken);
 
 				var grouped =
 					from x in data
 					group x by Math.Floor(x.Pace.TotalSeconds)
 					into g
-					select new { Pace = g.Key, Count = g.Count() };
+					select new
+					{
+						Pace = g.Key, 
+						MaleCount = g.Count(x => x.Sex == "M"),
+						FemaleCount = g.Count(x => x.Sex == "F")
+					};
 
 				return new DayData
 				{
@@ -92,7 +101,8 @@ namespace C2Stats.Services
 					Data = grouped.Select(x => new DayDatum
 					{
 						Pace = TimeSpan.FromSeconds(x.Pace),
-						Count = x.Count
+						Male = x.MaleCount,
+						Female = x.FemaleCount
 					}).OrderBy(x => x.Pace).ToArray()
 				};
 			}
