@@ -10,7 +10,7 @@ export interface WodDayBarProps {
 // website examples showcase many properties,
 // you'll often use just a few of them.
 export default ({ data }: WodDayBarProps) => (
-    <div style={{ width: "100%", height: 300 }}>
+    <div style={{ width: "100%", height: 220 }}>
 
         <ResponsiveBar
             data={data}
@@ -19,7 +19,7 @@ export default ({ data }: WodDayBarProps) => (
                 'male'
             ]}
             indexBy="pace"
-            margin={{ top: 50, right: 130, bottom: 50, left: 60 }}
+            margin={{ top: 10, right: 100, bottom: 60, left: 60 }}
             padding={0.3}
             valueScale={{ type: 'linear' }}
             indexScale={{ type: 'band', round: true }}
@@ -44,20 +44,6 @@ export default ({ data }: WodDayBarProps) => (
                     spacing: 10
                 }
             ]}
-            fill={[
-                {
-                    match: {
-                        id: 'fries'
-                    },
-                    id: 'dots'
-                },
-                {
-                    match: {
-                        id: 'sandwich'
-                    },
-                    id: 'lines'
-                }
-            ]}
             borderColor={{
                 from: 'color',
                 modifiers: [
@@ -72,10 +58,10 @@ export default ({ data }: WodDayBarProps) => (
             axisBottom={{
                 tickSize: 5,
                 tickPadding: 5,
-                tickRotation: 0,
+                tickRotation: -45,
                 legend: 'Pace',
                 legendPosition: 'middle',
-                legendOffset: 32,
+                legendOffset: 55,
                 truncateTickAt: 0
             }}
             axisLeft={{
@@ -87,7 +73,7 @@ export default ({ data }: WodDayBarProps) => (
                 legendOffset: -40,
                 truncateTickAt: 0
             }}
-            labelSkipWidth={12}
+            labelSkipWidth={8}
             labelSkipHeight={12}
             labelTextColor={{
                 from: 'color',
@@ -123,7 +109,7 @@ export default ({ data }: WodDayBarProps) => (
                 }
             ]}
             role="application"
-            ariaLabel="Nivo bar chart demo"
+            ariaLabel="WoD bar chart"
             barAriaLabel={e => e.id + ": " + e.formattedValue + " in country: " + e.indexValue}
         />
 

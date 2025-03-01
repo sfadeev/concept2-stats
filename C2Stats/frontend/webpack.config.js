@@ -33,6 +33,7 @@ var config = {
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
             template: './public/index.html',
+            favicon: './public/favicon-96x96.png'
         }),
     ],
     devServer: {
