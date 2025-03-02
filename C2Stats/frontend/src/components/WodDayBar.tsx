@@ -73,6 +73,7 @@ export default ({ data }: WodDayBarProps) => (
                 legendOffset: -40,
                 truncateTickAt: 0
             }}
+            enableLabel={false}
             labelSkipWidth={8}
             labelSkipHeight={12}
             labelTextColor={{
@@ -108,9 +109,6 @@ export default ({ data }: WodDayBarProps) => (
                     ]
                 }
             ]}
-            role="application"
-            ariaLabel="WoD bar chart"
-            barAriaLabel={e => e.id + ": " + e.formattedValue + " in country: " + e.indexValue}
         />
 
     </div>
