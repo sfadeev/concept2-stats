@@ -6,7 +6,7 @@ var config = {
     entry: './src/index.tsx',
     output: {
         path: path.resolve(__dirname, '../wwwroot'),
-        filename: 'bundle.js',
+        filename: '[name].[contenthash].js',
         publicPath: '/',
     },
     resolve: {
