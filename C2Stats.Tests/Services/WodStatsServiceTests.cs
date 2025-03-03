@@ -12,7 +12,7 @@ namespace C2Stats.Tests.Services
 			var service = new WodStatsService();
 			
 			// act
-			var result = await service.GetYear(WodType.RowErg, 2025, cancellationToken);
+			var result = await service.GetYear(WodType.RowErg, 2025, null, cancellationToken);
 			
 			// assert
 			Assert.That(result, Is.Not.Null);
@@ -25,7 +25,7 @@ namespace C2Stats.Tests.Services
 			var service = new WodStatsService();
 			
 			// act
-			var result = await service.GetDay(WodType.RowErg, DateOnly.FromDateTime(DateTime.UtcNow), cancellationToken);
+			var result = await service.GetDay(WodType.RowErg, DateOnly.FromDateTime(DateTime.UtcNow), null, cancellationToken);
 			
 			// assert
 			Assert.That(result, Is.Not.Null);

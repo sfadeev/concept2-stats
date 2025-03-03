@@ -6,9 +6,9 @@ namespace C2Stats.Services
 {
 	public interface IWodStatsService
 	{
-		Task<CalendarData> GetYear(string type, int year, CancellationToken cancellationToken);
+		Task<CalendarData> GetYear(string type, int year, string? country, CancellationToken cancellationToken);
 		
-		Task<DayData> GetDay(string type, DateOnly day, CancellationToken cancellationToken);
+		Task<DayData> GetDay(string type, DateOnly day, string? country, CancellationToken cancellationToken);
 	}
 
 	public class CalendarData
@@ -49,13 +49,22 @@ namespace C2Stats.Services
 	
 	public class WodStatsService : IWodStatsService
 	{
-		public async Task<CalendarData> GetYear(string type, int year, CancellationToken cancellationToken)
+		public async Task<CalendarData> GetYear(string type, int year, string? country, CancellationToken cancellationToken)
 		{
 			using (var db = new DataConnection())
 			{
-				var data = await db.GetTable<DbWod>()
-					.Where(x => x.Date.Year == year && x.Type == type && x.TotalCount != null)
-					.Select(x => new CalendarDatum { Day = x.Date, Value = x.TotalCount })
+				var data = await (
+						from g in
+							from w in db.GetTable<DbWod>().Where(x => x.Date.Year == year && x.Type == type)
+							join wi in db.GetTable<DbWodItem>()
+								on w.Id equals wi.WodId
+							join p in db.GetTable<DbProfile>().Where(x => country == null || x.Country == country)
+								on wi.ProfileId equals p.Id
+							group w by w.Id
+							into g
+							select new { Id = g.Key, Count = g.Count() }
+						join w in db.GetTable<DbWod>() on g.Id equals w.Id
+						select new CalendarDatum { Day = w.Date, Value = g.Count })
 					.ToArrayAsync(cancellationToken);
 				
 				return new CalendarData
@@ -68,7 +77,7 @@ namespace C2Stats.Services
 			}
 		}
 
-		public async Task<DayData> GetDay(string type, DateOnly day, CancellationToken cancellationToken)
+		public async Task<DayData> GetDay(string type, DateOnly day, string? country, CancellationToken cancellationToken)
 		{
 			using (var db = new DataConnection())
 			{
@@ -78,7 +87,7 @@ namespace C2Stats.Services
 						.Where(x => x.Date == day && x.Type == type)
 					join wi in db.GetTable<DbWodItem>().Where(x => x.Pace.HasValue)
 						on w.Id equals wi.WodId
-					join p in db.GetTable<DbProfile>()
+					join p in db.GetTable<DbProfile>().Where(x => country == null || x.Country == country)
 						on wi.ProfileId equals p.Id
 					select new { Pace = wi.Pace.Value, p.Sex }
 				).ToListAsync(cancellationToken);
