@@ -53,27 +53,33 @@ namespace C2Stats.Services
 		{
 			using (var db = new DataConnection())
 			{
-				var data = await (
-						from g in
-							from w in db.GetTable<DbWod>().Where(x => x.Date.Year == year && x.Type == type)
-							join wi in db.GetTable<DbWodItem>()
-								on w.Id equals wi.WodId
-							join p in db.GetTable<DbProfile>().Where(x => country == null || x.Country == country)
-								on wi.ProfileId equals p.Id
-							group w by w.Id
-							into g
-							select new { Id = g.Key, Count = g.Count() }
-						join w in db.GetTable<DbWod>() on g.Id equals w.Id
-						select new CalendarDatum { Day = w.Date, Value = g.Count })
-					.ToArrayAsync(cancellationToken);
+				var beginDate = new DateOnly(year, 1, 1);
+				var endDate = new DateOnly(year, 12, 31);
+
+				var query = from g in
+						from w in db.GetTable<DbWod>()
+						join wi in db.GetTable<DbWodItem>() on w.Id equals wi.WodId
+						join p in db.GetTable<DbProfile>() on wi.ProfileId equals p.Id
+						where w.Date >= beginDate && w.Date <= endDate &&
+						      w.Type == type &&
+						      (country == null || p.Country == country)
+						group w by w.Id
+						into g
+						select new { Id = g.Key, Count = g.Count() }
+					join w in db.GetTable<DbWod>() on g.Id equals w.Id
+					select new CalendarDatum { Day = w.Date, Value = g.Count };
 				
-				return new CalendarData
+				var data = await query.ToArrayAsync(cancellationToken);
+				
+				var result = new CalendarData
 				{
 					Type = type,
 					From = data.Length > 0 ? data.Min(x => x.Day) : null,
 					To = data.Length > 0 ? data.Max(x => x.Day) : null,
 					Data = data
 				};
+				
+				return result;
 			}
 		}
 
@@ -81,17 +87,15 @@ namespace C2Stats.Services
 		{
 			using (var db = new DataConnection())
 			{
-				var data = await
-				(
-					from w in db.GetTable<DbWod>()
-						.Where(x => x.Date == day && x.Type == type)
-					join wi in db.GetTable<DbWodItem>().Where(x => x.Pace.HasValue)
-						on w.Id equals wi.WodId
-					join p in db.GetTable<DbProfile>().Where(x => country == null || x.Country == country)
-						on wi.ProfileId equals p.Id
-					select new { Pace = wi.Pace.Value, p.Sex }
-				).ToListAsync(cancellationToken);
-
+				var query = from w in db.GetTable<DbWod>()
+					join wi in db.GetTable<DbWodItem>() on w.Id equals wi.WodId
+					join p in db.GetTable<DbProfile>() on wi.ProfileId equals p.Id
+					where w.Date == day && w.Type == type && 
+					      wi.Pace.HasValue && (country == null || p.Country == country)
+					select new { Pace = wi.Pace.Value, p.Sex };
+				
+				var data = await query.ToListAsync(cancellationToken);
+				
 				var grouped =
 					from x in data
 					group x by Math.Floor(x.Pace.TotalSeconds)
@@ -102,8 +106,8 @@ namespace C2Stats.Services
 						MaleCount = g.Count(x => x.Sex == "M"),
 						FemaleCount = g.Count(x => x.Sex == "F")
 					};
-
-				return new DayData
+				
+				var result = new DayData
 				{
 					Type = type,
 					Day = day,
@@ -114,6 +118,8 @@ namespace C2Stats.Services
 						Female = x.FemaleCount
 					}).OrderBy(x => x.Pace).ToArray()
 				};
+				
+				return result;
 			}
 		}
 	}
