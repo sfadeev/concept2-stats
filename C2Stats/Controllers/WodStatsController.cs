@@ -1,7 +1,4 @@
-using C2Stats.Entities;
 using C2Stats.Services;
-using LinqToDB;
-using LinqToDB.Data;
 using Microsoft.AspNetCore.Mvc;
 
 namespace C2Stats.Controllers
@@ -10,17 +7,11 @@ namespace C2Stats.Controllers
 	public class WodController(IWodStatsService wodStatsService) : ControllerBase
 	{
 		[HttpGet]
-		public async Task<IActionResult> Countries(CancellationToken cancellationToken)
+		public async Task<IActionResult> Countries(string type, int year, CancellationToken cancellationToken)
 		{
-			using (var db = new DataConnection())
-			{
-				var result = await db.GetTable<DbCountry>()
-					.OrderBy(x => x.Name)
-					.Select(x => new { x.Code, x.Name })
-					.ToListAsync(cancellationToken);
-				
-				return Ok(result);
-			}
+			var result = await wodStatsService.GetCountries(type, year, cancellationToken);
+
+			return Ok(result);
 		}
 		
 		[HttpGet]

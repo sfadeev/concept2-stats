@@ -6,6 +6,20 @@ namespace C2Stats.Tests.Services
 	public class WodStatsServiceTests
 	{
 		[Test, CancelAfter(1000)]
+		[TestCase(WodType.RowErg, 2025)]
+		public async Task GetCountries_NormalState_ShouldWork(string type, int year, CancellationToken cancellationToken = default)
+		{
+			// arrange
+			var service = new WodStatsService();
+			
+			// act
+			var result = await service.GetCountries(type, year, cancellationToken);
+			
+			// assert
+			Assert.That(result, Is.Not.Null);
+		}
+		
+		[Test, CancelAfter(1000)]
 		[TestCase(null)]
 		[TestCase("RUS")]
 		public async Task GetYear_NormalState_ShouldWork(string? country, CancellationToken cancellationToken = default)
