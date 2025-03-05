@@ -12,10 +12,10 @@ namespace C2Stats.Entities
 		[Column("name", DataType = DataType.VarChar, Length = 256), Nullable]
 		public string? Name { get; set; }
 		
-		[Column("country", DataType = DataType.VarChar, Length = 5), NotNull]
+		[Column("country", DataType = DataType.VarChar, Length = 5), Nullable]
 		public string? Country { get; set; }
 		
-		[Column("sex", DataType = DataType.VarChar, Length = 1), NotNull]
+		[Column("sex", DataType = DataType.VarChar, Length = 1), Nullable]
 		public string? Sex { get; set; }
 		
 		[Column("location", DataType = DataType.VarChar, Length = 256), Nullable]

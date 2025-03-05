@@ -39,7 +39,7 @@ namespace C2Stats.Services
 	}
 	
 	public class WodDownloader(ILogger<WodDownloader> logger, IHttpClientFactory httpClientFactory,
-		IWodParser parser, IProfileFileStorage profileFileStorage) : IWodDownloader
+		IWodParser parser, ICountryProvider countryProvider, IProfileFileStorage profileFileStorage) : IWodDownloader
 	{
 		public async Task<WodResult?> Download(DateOnly date, string wodType,
 			IWodDownloadCancellationChecker? cancellationChecker, CancellationToken cancellationToken)
@@ -57,10 +57,11 @@ namespace C2Stats.Services
 				if (item.Id != null)
 				{
 					profileFileStorage.TryGetProfile(item.Id.Value, out var profile);
-						
-					if (item.Country == UnaffiliatedCountry.Placeholder)
+					
+					// UNAFF, AIN etc
+					if (item.Country != null && countryProvider.GetCountryId(item.Country) == null)
 					{
-						if (profile?.Country != null && profile.Country != UnaffiliatedCountry.Placeholder)
+						if (profile?.Country != null && profile.Country != item.Country)
 						{
 							item.Country = profile.Country;
 						}
@@ -96,12 +97,25 @@ namespace C2Stats.Services
 					{
 						var item = result.Items.SingleOrDefault(x => x.Id == countryItem.Id);
 
-						if (item?.Country == UnaffiliatedCountry.Placeholder)
+						if (item?.Country != null && countryProvider.GetCountryId(item.Country) == null)
 						{
 							item.Country = unaffiliatedCountry.Code;
 							
 							unaffCount--;
 						}
+					}
+				}
+			}
+
+			if (unaffCount > 0 && logger.IsEnabled(LogLevel.Warning))
+			{
+				foreach (var item in result.Items)
+				{
+					if (item.Country != null && countryProvider.GetCountryId(item.Country) == null)
+					{
+						logger.LogWarning(
+							"Unknown country {Country} in profile {Id} {Name} found in {Date} / {WodType}",
+							item.Country, item.Id, item.Name, date, wodType);
 					}
 				}
 			}

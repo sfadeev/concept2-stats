@@ -127,7 +127,7 @@ namespace C2Stats.Services
 					join p in db.GetTable<DbProfile>() on wi.ProfileId equals p.Id
 					where w.Date == day && w.Type == type &&
 					      wi.Pace.HasValue && (country == null || p.Country == country)
-					select new { Pace = wi.Pace.Value, p.Sex };
+					select new { Pace = wi.Pace!.Value, p.Sex };
 				
 				var data = await query.ToListAsync(cancellationToken);
 				

@@ -1,6 +1,8 @@
 using System.Reflection;
 using System.Text.Json;
 using C2Stats.Entities;
+using LinqToDB;
+using LinqToDB.Data;
 
 namespace C2Stats.Services
 {
@@ -11,9 +13,50 @@ namespace C2Stats.Services
 		int? GetCountryId(string code);
 	}
 
+	public class DbCountryProvider : ICountryProvider
+	{
+		private readonly Lazy<Cache> _cache = new(BuildCache);
+		
+		public IEnumerable<DbCountry> GetAllCountries()
+		{
+			return _cache.Value.Countries;
+		}
+		
+		public int? GetCountryId(string code)
+		{
+			if (_cache.Value.CountryCodeMap.TryGetValue(code, out var country))
+			{
+				return country.Id;
+			}
+			
+			return null;
+		}
+		
+		private static Cache BuildCache()
+		{
+			using (var db = new DataConnection())
+			{
+				var countries = db.GetTable<DbCountry>().ToList();
+				
+				return new Cache
+				{
+					Countries = countries,
+					CountryCodeMap = countries.ToDictionary(x => x.Code, x => x)
+				};
+			}
+		}
+		
+		private class Cache
+		{
+			public required IList<DbCountry> Countries { get; init; }
+			
+			public required IDictionary<string, DbCountry> CountryCodeMap { get; init; }
+		}
+	}
+	
 	public class DefaultCountryProvider : ICountryProvider
 	{
-		private readonly Lazy<CountryCache> _cache = new(BuildCountryCache);
+		private readonly Lazy<Cache> _cache = new(BuildCache);
 
 		public IEnumerable<DbCountry> GetAllCountries()
 		{
@@ -30,13 +73,13 @@ namespace C2Stats.Services
 			return null;
 		}
 
-		private static CountryCache BuildCountryCache()
+		private static Cache BuildCache()
 		{
 			var json = ReadResourceFile(Assembly.GetExecutingAssembly(), "C2Stats.Resources.countries.json");
 
 			var countries = JsonSerializer.Deserialize<DbCountry[]>(json)!;
 
-			return new CountryCache
+			return new Cache
 			{
 				Countries = countries,
 				CountryCodeMap = countries.ToDictionary(x => x.Code, x => x)
@@ -54,9 +97,9 @@ namespace C2Stats.Services
 			}
 		}
 
-		private class CountryCache
+		private class Cache
 		{
-			public required DbCountry[] Countries { get; init; }
+			public required IList<DbCountry> Countries { get; init; }
 			
 			public required IDictionary<string, DbCountry> CountryCodeMap { get; init; }
 		}

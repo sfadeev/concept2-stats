@@ -22,7 +22,8 @@ namespace C2Stats.Tests.Services
 			var cancellationToken = CancellationToken.None;
 			var options = Options.Create(new AppOptions());
 			var downloader = new WodDownloader(NullLogger<WodDownloader>.Instance, httpClientFactoryMoq.Object,
-				new WodParser(), new ProfileFileStorage(NullLogger<ProfileFileStorage>.Instance, options, mediatorMoq.Object));
+				new WodParser(), new DbCountryProvider(),
+				new ProfileFileStorage(NullLogger<ProfileFileStorage>.Instance, options, mediatorMoq.Object));
 			
 			// act
 			var result = await downloader.Download(DateOnly.Parse(date), wodType, null, cancellationToken);
@@ -32,7 +33,6 @@ namespace C2Stats.Tests.Services
 			Assert.That(result.TotalCount, Is.Not.Null);
 			Assert.That(result.TotalCount, Is.GreaterThan(0));
 			Assert.That(result.Items.Count, Is.GreaterThan(0));
-			Assert.That(result.Items.Count(x => x.Country == UnaffiliatedCountry.Placeholder), Is.EqualTo(0));
 		}
 
 		[Test, Ignore("Slow")]
@@ -47,7 +47,8 @@ namespace C2Stats.Tests.Services
 			var cancellationToken = CancellationToken.None;
 			var options = Options.Create(new AppOptions());
 			var downloader = new WodDownloader(NullLogger<WodDownloader>.Instance, httpClientFactoryMoq.Object,
-				new WodParser(), new ProfileFileStorage(NullLogger<ProfileFileStorage>.Instance, options, mediatorMoq.Object));
+				new WodParser(), new DbCountryProvider(),
+				new ProfileFileStorage(NullLogger<ProfileFileStorage>.Instance, options, mediatorMoq.Object));
 			
 			// act
 			var result = await downloader.Download(DateOnly.Parse(date), wodType, null, cancellationToken);
@@ -57,7 +58,6 @@ namespace C2Stats.Tests.Services
 			Assert.That(result.TotalCount, Is.EqualTo(1989));
 			Assert.That(result.Items.Count(x => x.Country == "RUS"), Is.EqualTo(11));
 			Assert.That(result.Items.Count(x => x.Country == "BLR"), Is.EqualTo(1));
-			Assert.That(result.Items.Count(x => x.Country == UnaffiliatedCountry.Placeholder), Is.EqualTo(0));
 			Assert.That(result.Items.Count(x => x.Sex == null), Is.EqualTo(0));
 		}
 	}

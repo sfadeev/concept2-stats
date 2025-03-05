@@ -1,12 +1,9 @@
 using C2Stats.Entities;
-using C2Stats.Models;
 
 namespace C2Stats.Services
 {
 	public static class UnaffiliatedCountry
 	{
-		public static string Placeholder => "UNAFF";
-		
 		public static IEnumerable<DbCountry> GetList()
 		{
 			return new List<DbCountry>

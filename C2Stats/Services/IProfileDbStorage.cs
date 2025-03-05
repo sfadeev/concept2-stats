@@ -19,7 +19,7 @@ namespace C2Stats.Services
 			{
 				using (var db = new DataConnection())
 				{
-					var result = await db.GetTable<DbProfile>().MergeOnPk(profiles, cancellationToken);
+					var result = await db.GetTable<DbProfile>().MergeOnPrimaryKey(profiles, cancellationToken);
 
 					if (logger.IsEnabled(LogLevel.Information))
 					{

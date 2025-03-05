@@ -18,22 +18,15 @@ namespace C2Stats.Services
 			{
 				var countries = await countryDownloader.Download(cancellationToken);
 
-				countries.Add(new DbCountry
-				{
-					Id = -1, 
-					Code = UnaffiliatedCountry.Placeholder, 
-					Name = "UNAFFILIATED"
-				});
-
 				using (var db = new DataConnection())
 				{
-					var result = await db.GetTable<DbCountry>().MergeOnPk(countries, cancellationToken);
+					var result = await db.GetTable<DbCountry>().MergeOnPrimaryKey(countries, cancellationToken);
 
 					if (logger.IsEnabled(LogLevel.Information))
 					{
 						var count = await db.GetTable<DbCountry>().CountAsync(cancellationToken);
 
-						logger.LogInformation("Merged {MergedCount} countrie(s) to database, total {TotalCount} countries", result, count);	
+						logger.LogInformation("Merged {MergedCount} country(-ies) to database, total {TotalCount} country(-ies)", result, count);	
 					}
 					
 					return result;
