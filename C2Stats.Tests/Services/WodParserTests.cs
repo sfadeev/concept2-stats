@@ -79,8 +79,26 @@ namespace C2Stats.Tests.Services
 			Assert.That(result.Items.Count(x => x.ResultMeters.HasValue), Is.EqualTo(rowCount));
 			Assert.That(result.Items.Count(x => x.ResultTime.HasValue), Is.EqualTo(0));
 		}
+		
+		[Test]
+		[TestCase("../../../Content/wod-2022-09-06-rowerg-only-pace.html", 50, 1862, 38)]
+		public async Task Parse_WithResultOnlyPace_ShouldWork(string htmlPath, int rowCount, int totalCount, int totalPageNum)
+		{
+			// arrange
+			var parser = new WodParser();
+			var html = await File.ReadAllTextAsync(htmlPath);
+			
+			// act
+			var result = parser.Parse(html);
+			
+			// assert
+			AssertWodResult(result, rowCount, totalCount, totalPageNum, 49);
+			
+			Assert.That(result.Items.Count(x => x.ResultMeters.HasValue), Is.EqualTo(0));
+			Assert.That(result.Items.Count(x => x.ResultTime.HasValue), Is.EqualTo(0));
+		}
 
-		private static void AssertWodResult(WodResult result, int rowCount, int totalCount, int totalPageNum)
+		private static void AssertWodResult(WodResult result, int rowCount, int totalCount, int totalPageNum, int? ageCount = null)
 		{
 			Assert.That(result, Is.Not.Null);
 			Assert.That(result.Has404Error, Is.Null);
@@ -94,7 +112,7 @@ namespace C2Stats.Tests.Services
 			Assert.That(result.Items.Select(x => x.Id!.Value).Distinct().Count(), Is.EqualTo(rowCount));
 			Assert.That(result.Items.Count(x => x.Position.HasValue), Is.EqualTo(rowCount));
 			Assert.That(result.Items.Count(x => x.Name != null), Is.EqualTo(rowCount));
-			Assert.That(result.Items.Count(x => x.Age.HasValue), Is.EqualTo(rowCount));
+			Assert.That(result.Items.Count(x => x.Age.HasValue), Is.EqualTo(ageCount ?? rowCount));
 			Assert.That(result.Items.Count(x => x.Pace.HasValue), Is.EqualTo(rowCount));
 		}
 	}

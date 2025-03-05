@@ -79,9 +79,34 @@ namespace C2Stats.Services
 					return result;
 				}
 				
+				var columns = content.SelectNodes("table/thead/tr/th");
 				var rows = content.SelectNodes("table/tbody/tr");
 
-				const StringComparison stringComparison = StringComparison.OrdinalIgnoreCase;
+				int? posIndex = null,
+					nameIndex = null,
+					ageIndex = null,
+					locationIndex = null,
+					countryIndex = null,
+					clubIndex = null,
+					resultIndex = null,
+					paceIndex = null;
+				
+				if (columns != null)
+				{
+					for (var i = 0; i < columns.Count; i++)
+					{
+						var column = columns[i];
+						
+						if (column.InnerText == "Pos.") posIndex = i;
+						if (column.InnerText == "Name") nameIndex = i;
+						if (column.InnerText == "Age") ageIndex = i;
+						if (column.InnerText == "Location") locationIndex = i;
+						if (column.InnerText == "Country") countryIndex = i;
+						if (column.InnerText == "Club/Affiliation") clubIndex = i;
+						if (column.InnerText == "Result") resultIndex = i;
+						if (column.InnerText == "Pace") paceIndex = i;
+					}
+				}
 
 				if (rows != null)
 				{
@@ -95,62 +120,62 @@ namespace C2Stats.Services
 						{
 							var cell = cells[i];
 
-							switch (i)
+							if (i == posIndex)
 							{
-								case 0:
-									item.Position = ParseNumber(cell.InnerText);
-									break;
+								item.Position = ParseNumber(cell.InnerText);
+							}
+							else if (i == nameIndex)
+							{
+								var anchor = cell.SelectSingleNode("a");
 
-								case 1:
-									var anchor = cell.SelectSingleNode("a");
+								if (anchor != null)
+								{
+									item.Name = ParseString(anchor.InnerText);
 
-									if (anchor != null)
+									var href = anchor.Attributes["href"]?.Value;
+
+									if (href != null)
 									{
-										item.Name = ParseString(anchor.InnerText);
+										var idIndex = href.LastIndexOf('/');
 
-										var href = anchor.Attributes["href"]?.Value;
-
-										if (href != null)
-										{
-											var idIndex = href.LastIndexOf("/", stringComparison);
-
-											if (idIndex > 0) item.Id = ParseNumber(href[(idIndex + 1)..]);
-										}
+										if (idIndex > 0) item.Id = ParseNumber(href[(idIndex + 1)..]);
 									}
-									
-									break;
-
-								case 2:
-									item.Age = ParseNumber(cell.InnerText);
-									break;
-
-								case 3:
-									item.Location = ParseString(cell.InnerText);
-									break;
-
-								case 4:
-									item.Country = ParseString(cell.InnerText);
-									break;
-
-								case 5:
-									item.Affiliation = ParseString(cell.InnerText);
-									break;
-
-								case 6:
-									if (cell.InnerText.EndsWith("m", stringComparison))
-									{
-										item.ResultMeters = ParseNumber(cell.InnerText[..^1]);
-									}
-									else
-									{
-										item.ResultTime = ParseTimeSpan(cell.InnerText);
-									}
-									
-									break;
-
-								case 7:
-									item.Pace = ParseTimeSpan(cell.InnerText);
-									break;
+								}
+							}
+							else if (i == ageIndex)
+							{
+								item.Age = ParseNumber(cell.InnerText);
+							}
+							else if (i == locationIndex)
+							{
+								item.Location = ParseString(cell.InnerText);
+							}
+							else if (i == countryIndex)
+							{
+								item.Country = ParseString(cell.InnerText);
+							}
+							else if (i == clubIndex)
+							{
+								item.Affiliation = ParseString(cell.InnerText);
+							}
+							else if (i == resultIndex)
+							{
+								if (cell.InnerText.EndsWith('m'))
+								{
+									item.ResultMeters = ParseNumber(cell.InnerText[..^1]);
+								}
+								else if (cell.InnerText.Contains(':'))
+								{
+									item.ResultTime = ParseTimeSpan(cell.InnerText);
+								}
+								else
+								{
+									item.ResultMeters = ParseNumber(cell.InnerText);
+								}
+							}
+							else if (i == paceIndex)
+							{
+								item.Pace = ParseTimeSpan(cell.InnerText);
 							}
 						}
 
