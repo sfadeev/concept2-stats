@@ -82,7 +82,7 @@ namespace C2Stats
 				
 				var app = builder.Build();
 
-				// app.UseSerilogRequestLogging();
+				app.UseSerilogRequestLogging();
 				
 				// if (app.Environment.IsDevelopment() == false)
 				{
@@ -93,11 +93,11 @@ namespace C2Stats
 					app.UseHsts();
 				}
 
-				app.UseHttpsRedirection();
+				// app.UseHttpsRedirection();
 				app.UseStaticFiles();
 
 				app.UseRouting();
-				app.UseAuthorization();
+				// app.UseAuthorization();
 				
 				app.MapControllerRoute(
 					"default",
