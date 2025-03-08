@@ -82,7 +82,7 @@ namespace C2Stats
 				
 				var app = builder.Build();
 
-				app.UseSerilogRequestLogging();
+				// app.UseSerilogRequestLogging();
 				
 				// if (app.Environment.IsDevelopment() == false)
 				{
