@@ -1,7 +1,8 @@
 import { Card, DatePicker, Segmented, Space } from 'antd';
 import dayjs from 'dayjs';
 import { useState } from 'react';
-import CountrySelect from '../components/CountrySelect';
+import CountrySelector from '../components/CountrySelector';
+import ProfileSelector from '../components/ProfileSelector';
 import WodCalendarData from '../components/WodCalendarData';
 import WodDayBarData from '../components/WodDayBarData';
 
@@ -32,13 +33,16 @@ export default () => {
             />
 
             {(date && type) ? (<>
-                <CountrySelect
+                <CountrySelector
                     type={type}
                     date={date}
                     country={country}
                     onChange={(value) => setCountry(value)}
                 />
             </>) : null}
+
+            <ProfileSelector
+            />
         </Space>
 
         {(date && type) ? (<>

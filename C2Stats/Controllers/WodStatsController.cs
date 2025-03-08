@@ -7,6 +7,14 @@ namespace C2Stats.Controllers
 	public class WodController(IWodStatsService wodStatsService) : ControllerBase
 	{
 		[HttpGet]
+		public async Task<IActionResult> Profiles(string? search, CancellationToken cancellationToken)
+		{
+			var result = await wodStatsService.GetProfiles(search, cancellationToken);
+
+			return Ok(result);
+		}
+		
+		[HttpGet]
 		public async Task<IActionResult> Countries(string type, int year, CancellationToken cancellationToken)
 		{
 			var result = await wodStatsService.GetCountries(type, year, cancellationToken);

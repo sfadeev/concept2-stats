@@ -49,7 +49,7 @@ export default ({ type, date, country, onChange }: CountrySelectorProps) => {
                 showSearch={true}
                 filterOption={true}
                 optionFilterProp='label'
-                style={{ width: 220 }}
+                style={{ width: 200 }}
                 options={countries.map(x => { return { value: x.code, label: x.name, count: x.value }; })}
                 optionRender={(option) => (
                     <>

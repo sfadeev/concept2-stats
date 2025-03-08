@@ -6,11 +6,20 @@ namespace C2Stats.Services
 {
 	public interface IWodStatsService
 	{
-		Task<IList<CountryDatum>> GetCountries(string type, int year, CancellationToken cancellationToken);
+		Task<IEnumerable<Profile>> GetProfiles(string? search, CancellationToken cancellationToken);
+		
+		Task<IEnumerable<CountryDatum>> GetCountries(string type, int year, CancellationToken cancellationToken);
 		
 		Task<CalendarData> GetYear(string type, int year, string? country, CancellationToken cancellationToken);
 		
 		Task<DayData> GetDay(string type, DateOnly day, string? country, CancellationToken cancellationToken);
+	}
+	
+	public class Profile
+	{
+		public int Id { get; set; }
+		
+		public string Name { get; set; }
 	}
 	
 	public class CountryDatum
@@ -60,7 +69,22 @@ namespace C2Stats.Services
 	
 	public class WodStatsService : IWodStatsService
 	{
-		public async Task<IList<CountryDatum>> GetCountries(string type, int year, CancellationToken cancellationToken)
+		public async Task<IEnumerable<Profile>> GetProfiles(string? search, CancellationToken cancellationToken)
+		{
+			if (string.IsNullOrWhiteSpace(search)) return [];
+			
+			using (var db = new DataConnection())
+			{
+				var result = from p in db.GetTable<DbProfile>()
+					where p.Name.ToLower().Contains(search.ToLower())
+					orderby p.Name
+					select new Profile { Id = p.Id, Name = p.Name };
+				
+				return await result.Take(100).ToListAsync(cancellationToken);
+			}
+		}
+
+		public async Task<IEnumerable<CountryDatum>> GetCountries(string type, int year, CancellationToken cancellationToken)
 		{
 			using (var db = new DataConnection())
 			{
