@@ -35,7 +35,6 @@ export default () => {
             <CountrySelector
                 type={type}
                 date={date}
-                country={country}
                 onChange={(value) => setCountry(value)}
             />
 

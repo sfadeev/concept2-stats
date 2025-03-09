@@ -2,6 +2,11 @@ import { Select, Typography } from "antd";
 import { useEffect, useState } from "react";
 const { Text } = Typography;
 
+export interface Country {
+    code: string;
+    name: string;
+}
+
 export interface CountryDatum {
     code: string;
     name: string;
@@ -11,15 +16,29 @@ export interface CountryDatum {
 export interface CountrySelectorProps {
     type?: string | null;
     date?: Date | null;
-    country?: string;
     onChange: (value?: string) => void;
 }
 
-export default ({ type, date, country, onChange }: CountrySelectorProps) => {
+const getLocalStorageCountry = (): Country => {
+    return JSON.parse(localStorage.getItem('country') || '{}');
+};
+
+const setLocalStorageCountry = (country: Country | null): void => {
+    if (country) localStorage.setItem('country', JSON.stringify(country));
+    else localStorage.removeItem('country');
+};
+
+export default ({ type, date, onChange }: CountrySelectorProps) => {
 
     const [loading, setLoading] = useState<boolean>(false);
+    const [country, setCountry] = useState<Country | null>(getLocalStorageCountry);
     const [countries, setCountries] = useState<CountryDatum[]>([]);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        onChange(country?.code);
+        return setLocalStorageCountry(country);
+    }, [country]);
 
     useEffect(() => {
         const year = date?.getFullYear();
@@ -39,7 +58,6 @@ export default ({ type, date, country, onChange }: CountrySelectorProps) => {
                     return setError(null);
                 })
                 .catch((e: Error) => {
-
                     setCountries([]);
                     setLoading(false);
                     return setError(e.message);
@@ -47,6 +65,11 @@ export default ({ type, date, country, onChange }: CountrySelectorProps) => {
         }
 
     }, [type, date?.getFullYear()]);
+
+    const onSelect = (country: Country | null) => {
+        setCountry(country);
+        onChange(country?.code);
+    };
 
     const totalCount = countries.reduce((x, c) => x + c.value, 0),
         totalCountText = totalCount > 0 ? `(${totalCount})` : '';
@@ -57,7 +80,7 @@ export default ({ type, date, country, onChange }: CountrySelectorProps) => {
             loading={loading}
             status={error ? 'error' : undefined}
             notFoundContent={error}
-            value={country}
+            defaultValue={country?.code}
             allowClear={true}
             showSearch={true}
             filterOption={true}
@@ -67,8 +90,8 @@ export default ({ type, date, country, onChange }: CountrySelectorProps) => {
             optionRender={(option) =>
                 <SelectOption label={option.data.label} count={option.data.count} />
             }
-            onSelect={(_, country) => onChange(country.value)}
-            onClear={() => onChange(undefined)}
+            onSelect={(_, country) => onSelect({ code: country.value, name: country.label })}
+            onClear={() => onSelect(null)}
         />
     );
 };
