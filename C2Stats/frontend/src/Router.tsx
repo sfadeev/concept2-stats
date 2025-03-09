@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
-import About from './pages/About';
 import Home from './pages/Home';
 
 const AppRouter: React.FC = () => {
@@ -15,7 +14,8 @@ const AppRouter: React.FC = () => {
 
             <Routes>
                 <Route path="/" element={<Home />} />
-                <Route path="/about" element={<About />} />
+                <Route path="/:qdate/" element={<Home />} />
+                <Route path="/:qdate/:qtype" element={<Home />} />
             </Routes>
         </Router>
     );

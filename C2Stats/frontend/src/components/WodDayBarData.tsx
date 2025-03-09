@@ -1,5 +1,6 @@
 import { Alert, Col, Divider, Empty, Row, Skeleton, Space, Statistic, Typography } from 'antd';
 import { useEffect, useState } from "react";
+import { getDateString } from '../utils';
 import WodDayBar, { WodDayDataItem } from "./WodDayBar";
 
 export interface Wod {
@@ -18,7 +19,7 @@ export interface WodDayData {
 
 export interface WodDayBarDataProps {
     type: string;
-    date?: Date | null;
+    date: Date;
     country?: string | null;
 }
 
@@ -30,13 +31,9 @@ export default ({ type, date, country }: WodDayBarDataProps) => {
 
     useEffect(() => {
 
-        const offset = date?.getTimezoneOffset();
-        const dateWithOffset = date && offset ? new Date(date.getTime() - (offset * 60 * 1000)) : null;
-        const dateStr = dateWithOffset?.toISOString().split('T')[0] || '';
-
         setLoading(true);
 
-        fetch(`/api/wod/day?type=${type}&date=${dateStr}&country=${country || ''}`)
+        fetch(`/api/wod/day?type=${type}&date=${getDateString(date)}&country=${country || ''}`)
             .then(response => {
                 if (response.ok) return response.json();
                 throw new Error(`${response.statusText} (${response.status})`);

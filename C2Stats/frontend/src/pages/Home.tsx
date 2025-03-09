@@ -1,35 +1,61 @@
 import { Card, DatePicker, Segmented, Space } from 'antd';
 import dayjs from 'dayjs';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import CountrySelector from '../components/CountrySelector';
 import ProfileSelector from '../components/ProfileSelector';
 import WodCalendarData from '../components/WodCalendarData';
 import WodDayBarData from '../components/WodDayBarData';
+import { getDateString } from '../utils';
+
+const DEFAULT_TYPE = 'rowerg';
+
+type HomeParams = {
+    qdate: string;
+    qtype: string;
+};
 
 export default () => {
 
-    const [date, setDate] = useState<Date | null>(new Date());
-    const [type, setType] = useState<string | null>('rowerg');
+    const navigate = useNavigate();
+
+    const go = (date: Date, type: string = DEFAULT_TYPE) => {
+        navigate(`/${getDateString(date)}/${type}`);
+    };
+
+    let { qdate, qtype } = useParams<HomeParams>();
+
+    useEffect(() => {
+        if (!qdate || !qtype) {
+            go(qdate ? new Date(qdate) : new Date(), qtype);
+        }
+
+        setDate(new Date(qdate!));
+        setType(qtype);
+
+    }, [qdate, qtype]);
+
+    const [date, setDate] = useState<Date | undefined>();
+    const [type, setType] = useState<string | undefined>();
     const [country, setCountry] = useState<string | undefined>();
 
     return (<>
-
         <Space>
             <DatePicker
                 id='date'
+                allowClear={false}
                 value={date ? dayjs(date) : null}
-                onChange={(date, dateString) => {
-                    setDate(date ? date.toDate() : null);
-                }}
+                onChange={(date, _dateString) => go(date.toDate(), type)}
             />
 
             <Segmented<string>
+                value={type}
                 options={[
                     { value: 'rowerg', label: 'RowErg' },
                     { value: 'bikeerg', label: 'BikeErg' },
                     { value: 'skierg', label: 'SkiErg' },
                 ]}
-                onChange={(value) => setType(value)}
+                onChange={(value) => go(date!, value)}
             />
 
             <CountrySelector
@@ -49,7 +75,7 @@ export default () => {
                         year={date.getFullYear()}
                         country={country}
                         onClick={(date, event) => {
-                            return setDate(date);
+                            return go(date, type);
                         }}
                     />
                 </div>
