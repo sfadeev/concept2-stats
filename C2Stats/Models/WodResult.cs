@@ -21,15 +21,6 @@ namespace C2Stats.Models
 		public IList<WodResultItem> Items { get; set; } = new List<WodResultItem>();
 	}
 
-	public static class WodType
-	{
-		public const string RowErg = "rowerg";
-		
-		public const string SkiErg = "skierg";
-		
-		public const string BikeErg = "bikeerg";
-	}
-
 	public class WodResultItem
 	{
 		public int? Id { get; set; }

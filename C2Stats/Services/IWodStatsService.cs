@@ -1,4 +1,5 @@
 using C2Stats.Entities;
+using C2Stats.Models;
 using LinqToDB;
 using LinqToDB.Data;
 
@@ -14,29 +15,7 @@ namespace C2Stats.Services
 		
 		Task<DayData?> GetDay(string type, DateOnly day, string? country, CancellationToken cancellationToken);
 	}
-	
-	public class Profile
-	{
-		public int Id { get; set; }
-		
-		public string? Name { get; set; }
-	}
-	
-	public class Wod
-	{
-		public int Id { get; set; }
-		
-		public DateOnly Date { get; set; }
-		
-		public string? Type { get; set; }
-		
-		public string? Name { get; set; }
-		
-		public string? Description { get; set; }
-		
-		public int? TotalCount { get; set; }
-	}
-	
+
 	public class CountryDatum
 	{
 		public string? Code { get; set; }
