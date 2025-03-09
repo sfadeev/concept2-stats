@@ -1,3 +1,4 @@
+import { Skeleton } from "antd";
 import { useEffect, useState } from "react";
 import WodCalendar, { WodCalendarProps } from "./WodCalendar";
 
@@ -40,7 +41,7 @@ export default ({ type, year, country, onClick }: WodCalendarDataProps) => {
                         onClick={(d, x) => { return (onClick ? onClick(d, x) : null); }}
                     />
                 ) : (
-                    <div>Loading...</div>
+                    <Skeleton title={false} paragraph={{ rows: 4 }} style={{ width: 680, height: 170 }} />
                 )
             )}
         </>

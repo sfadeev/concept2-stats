@@ -12,7 +12,7 @@ namespace C2Stats.Services
 		
 		Task<CalendarData> GetYear(string type, int year, string? country, CancellationToken cancellationToken);
 		
-		Task<DayData> GetDay(string type, DateOnly day, string? country, CancellationToken cancellationToken);
+		Task<DayData?> GetDay(string type, DateOnly day, string? country, CancellationToken cancellationToken);
 	}
 	
 	public class Profile
@@ -20,6 +20,21 @@ namespace C2Stats.Services
 		public int Id { get; set; }
 		
 		public string? Name { get; set; }
+	}
+	
+	public class Wod
+	{
+		public int Id { get; set; }
+		
+		public DateOnly Date { get; set; }
+		
+		public string? Type { get; set; }
+		
+		public string? Name { get; set; }
+		
+		public string? Description { get; set; }
+		
+		public int? TotalCount { get; set; }
 	}
 	
 	public class CountryDatum
@@ -51,11 +66,9 @@ namespace C2Stats.Services
 
 	public class DayData
 	{
-		public string? Type { get; set; }
+		public Wod? Wod { get; set; }
 		
-		public DateOnly Day { get; set; }
-		
-		public required DayDatum[] Data { get; set; }
+		public DayDatum[]? Data { get; set; }
 	}
 
 	public class DayDatum
@@ -142,43 +155,55 @@ namespace C2Stats.Services
 			}
 		}
 
-		public async Task<DayData> GetDay(string type, DateOnly day, string? country, CancellationToken cancellationToken)
+		public async Task<DayData?> GetDay(string type, DateOnly day, string? country, CancellationToken cancellationToken)
 		{
 			using (var db = new DataConnection())
 			{
-				var query = from w in db.GetTable<DbWod>()
-					join wi in db.GetTable<DbWodItem>() on w.Id equals wi.WodId
-					join p in db.GetTable<DbProfile>() on wi.ProfileId equals p.Id
-					where w.Date == day && w.Type == type &&
-					      wi.Pace.HasValue && (country == null || p.Country == country)
-					select new { Pace = wi.Pace!.Value, p.Sex };
-				
-				var data = await query.ToListAsync(cancellationToken);
-				
-				var grouped =
-					from x in data
-					group x by Math.Floor(x.Pace.TotalSeconds)
-					into g
-					select new
+				var wod = await (from w in db.GetTable<DbWod>()
+					where w.Date == day && w.Type == type
+					select new Wod
 					{
-						Pace = g.Key, 
-						MaleCount = g.Count(x => x.Sex == "M"),
-						FemaleCount = g.Count(x => x.Sex == "F")
-					};
-				
-				var result = new DayData
+						Id = w.Id,
+						Date = w.Date,
+						Type = w.Type,
+						Name = w.Name,
+						Description = w.Description,
+						TotalCount = w.TotalCount
+					}).SingleOrDefaultAsync(cancellationToken);
+
+				if (wod != null)
 				{
-					Type = type,
-					Day = day,
-					Data = grouped.Select(x => new DayDatum
-					{
-						Pace = TimeSpan.FromSeconds(x.Pace),
-						Male = x.MaleCount,
-						Female = x.FemaleCount
-					}).OrderBy(x => x.Pace).ToArray()
-				};
+					var query = from wi in db.GetTable<DbWodItem>()
+						join p in db.GetTable<DbProfile>() on wi.ProfileId equals p.Id
+						where wi.WodId == wod.Id && wi.Pace.HasValue && (country == null || p.Country == country)
+						select new { Pace = wi.Pace!.Value, p.Sex };
 				
-				return result;
+					var data = await query.ToListAsync(cancellationToken);
+				
+					var grouped =
+						from x in data
+						group x by Math.Floor(x.Pace.TotalSeconds)
+						into g
+						select new
+						{
+							Pace = g.Key, 
+							MaleCount = g.Count(x => x.Sex == "M"),
+							FemaleCount = g.Count(x => x.Sex == "F")
+						};
+
+					return new DayData
+					{
+						Wod = wod,
+						Data = grouped.Select(x => new DayDatum
+						{
+							Pace = TimeSpan.FromSeconds(x.Pace),
+							Male = x.MaleCount,
+							Female = x.FemaleCount
+						}).OrderBy(x => x.Pace).ToArray()
+					};
+				}
+				
+				return new DayData();
 			}
 		}
 	}

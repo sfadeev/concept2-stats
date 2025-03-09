@@ -1,7 +1,13 @@
-import { ResponsiveBar } from '@nivo/bar';
+import { BarDatum, ResponsiveBar } from '@nivo/bar';
+
+export interface WodDayDataItem extends BarDatum {
+    pace: any;
+    male: number;
+    female: number;
+}
 
 export interface WodDayBarProps {
-    data: [];
+    data: WodDayDataItem[];
 }
 
 // make sure parent container have a defined height when using

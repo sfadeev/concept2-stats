@@ -31,17 +31,17 @@ export default ({ type, date, country, onChange }: CountrySelectorProps) => {
             fetch(`/api/wod/countries?type=${type}&year=${year}`)
                 .then(response => {
                     if (response.ok) return response.json();
-
                     throw new Error(`${response.statusText} (${response.status})`);
                 })
                 .then(data => {
-                    setLoading(false);
                     setCountries(data);
+                    setLoading(false);
                     return setError(null);
                 })
                 .catch((e: Error) => {
-                    setLoading(false);
+
                     setCountries([]);
+                    setLoading(false);
                     return setError(e.message);
                 });
         }
