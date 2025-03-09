@@ -32,17 +32,14 @@ export default () => {
                 onChange={(value) => setType(value)}
             />
 
-            {(date && type) ? (<>
-                <CountrySelector
-                    type={type}
-                    date={date}
-                    country={country}
-                    onChange={(value) => setCountry(value)}
-                />
-            </>) : null}
-
-            <ProfileSelector
+            <CountrySelector
+                type={type}
+                date={date}
+                country={country}
+                onChange={(value) => setCountry(value)}
             />
+
+            <ProfileSelector />
         </Space>
 
         {(date && type) ? (<>

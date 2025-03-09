@@ -45,10 +45,11 @@ export default () => {
 
     return (<>
         <AutoComplete
+            placeholder='Select Profile'
             defaultValue={profile?.value}
             allowClear={true}
             options={options}
-            style={{ width: 200 }}
+            style={{ width: 205 }}
             onSearch={onSearch}
             onSelect={(value: string, profile: any) => setProfile(profile)}
             onClear={() => setProfile(null)}

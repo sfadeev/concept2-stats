@@ -19,7 +19,7 @@ namespace C2Stats.Services
 	{
 		public int Id { get; set; }
 		
-		public string Name { get; set; }
+		public string? Name { get; set; }
 	}
 	
 	public class CountryDatum
@@ -76,7 +76,7 @@ namespace C2Stats.Services
 			using (var db = new DataConnection())
 			{
 				var result = from p in db.GetTable<DbProfile>()
-					where p.Name.ToLower().Contains(search.ToLower())
+					where p.Name != null && p.Name.Contains(search, StringComparison.OrdinalIgnoreCase)
 					orderby p.Name
 					select new Profile { Id = p.Id, Name = p.Name };
 				
