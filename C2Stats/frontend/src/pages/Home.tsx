@@ -6,7 +6,7 @@ import CountrySelector from '../components/CountrySelector';
 import ProfileSelector from '../components/ProfileSelector';
 import WodCalendarData from '../components/WodCalendarData';
 import WodDayBarData from '../components/WodDayBarData';
-import { getDateString } from '../utils';
+import { getDateString, getValidDate, isValidDate } from '../utils';
 
 const DEFAULT_TYPE = 'rowerg';
 
@@ -26,8 +26,8 @@ export default () => {
     let { qdate, qtype } = useParams<HomeParams>();
 
     useEffect(() => {
-        if (!qdate || !qtype) {
-            go(qdate ? new Date(qdate) : new Date(), qtype);
+        if (!qdate || !isValidDate(qdate) || !qtype) {
+            go(getValidDate(qdate), qtype);
         }
 
         setDate(new Date(qdate!));
