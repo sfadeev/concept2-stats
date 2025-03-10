@@ -14,8 +14,10 @@ namespace C2Stats.Services
 		Task<CalendarData> GetYear(string type, int year, string? country, CancellationToken cancellationToken);
 		
 		Task<DayData?> GetDay(string type, DateOnly day, string? country, CancellationToken cancellationToken);
+		
+		Task<IEnumerable<WodItem>> GetWodItems(string type, DateOnly day, string? country, CancellationToken cancellationToken);
 	}
-
+	
 	public class CountryDatum
 	{
 		public string? Code { get; set; }
@@ -57,6 +59,37 @@ namespace C2Stats.Services
 		public int Male { get; set; }
 		
 		public int Female { get; set; }
+	}
+	
+	public class WodItem
+	{
+		public int? No { get; set; }
+		
+		public int? ProfileId { get; set; }
+		
+		public int? Position { get; set; }
+
+		public string? Name { get; set; }
+
+		public string? Sex { get; set; }
+		
+		public int? Age { get; set; }
+
+		public string? Location { get; set; }
+
+		public string? Country { get; set; }
+		
+		public string? Affiliation { get; set; }
+
+		public TimeSpan? ResultTime { get; set; }
+		
+		public string? ResultTimeFmt { get; set; }
+
+		public int? ResultMeters { get; set; }
+
+		public TimeSpan? Pace { get; set; }
+		
+		public string? PaceFmt { get; set; }
 	}
 	
 	public class WodStatsService : IWodStatsService
@@ -183,6 +216,73 @@ namespace C2Stats.Services
 				}
 				
 				return new DayData();
+			}
+		}
+
+		public async Task<IEnumerable<WodItem>> GetWodItems(string type, DateOnly day, string? country,
+			CancellationToken cancellationToken)
+		{
+			using (var db = new DataConnection())
+			{
+				var wod = await (from w in db.GetTable<DbWod>()
+					where w.Date == day && w.Type == type
+					select new Wod
+					{
+						Id = w.Id,
+						Date = w.Date,
+						Type = w.Type,
+						Name = w.Name,
+						Description = w.Description,
+						TotalCount = w.TotalCount
+					}).SingleOrDefaultAsync(cancellationToken);
+
+				if (wod != null)
+				{
+					var query = from wi in db.GetTable<DbWodItem>()
+						join p in db.GetTable<DbProfile>() on wi.ProfileId equals p.Id
+						where wi.WodId == wod.Id && (country == null || p.Country == country)
+						orderby wi.No
+						select new WodItem
+						{
+							ProfileId = wi.ProfileId,
+							Position = wi.Position,
+							Name = p.Name,
+							Sex = p.Sex,
+							Age = wi.Age,
+							Location = p.Location,
+							Country = p.Country,
+							ResultTime = wi.ResultTime,
+							ResultMeters = wi.ResultMeters,
+							Pace = wi.Pace
+						};
+
+					var data = await query.ToListAsync(cancellationToken);
+
+					Func<TimeSpan?, string?> formatTimeSpan = time =>
+					{
+						if (time.HasValue)
+						{
+							var t = time.Value;
+
+							return $"{(int)t.TotalMinutes}:{t.Seconds:D2}.{t.Milliseconds / 100}";
+						}
+						
+						return null;
+					};
+					
+					for (var index = 0; index < data.Count; index++)
+					{
+						var item = data[index];
+						
+						item.No = index + 1;
+						item.ResultTimeFmt = formatTimeSpan(item.ResultTime);
+						item.PaceFmt = formatTimeSpan(item.Pace);
+					}
+
+					return data;
+				}
+				
+				return [];
 			}
 		}
 	}

@@ -6,7 +6,8 @@ import CountrySelector from '../components/CountrySelector';
 import ProfileSelector from '../components/ProfileSelector';
 import WodCalendarData from '../components/WodCalendarData';
 import WodDayBarData from '../components/WodDayBarData';
-import { getDateString, getValidDate, isValidDate } from '../utils';
+import WodItemTable from '../components/WodItemTable';
+import { getDateString, getValidDate, isValidDate } from '../services/dateService';
 
 const DEFAULT_TYPE = 'rowerg';
 
@@ -15,7 +16,7 @@ type HomeParams = {
     qtype: string;
 };
 
-export default () => {
+const HomePage = () => {
 
     const navigate = useNavigate();
 
@@ -80,14 +81,14 @@ export default () => {
                     />
                 </div>
 
-                <WodDayBarData
-                    type={type}
-                    date={date}
-                    country={country}
-                />
+                <WodDayBarData type={type} date={date} country={country} />
+                <WodItemTable type={type} date={date} country={country} />
+
             </Card>
 
         </>) : null}
 
     </>);
 };
+
+export default HomePage;

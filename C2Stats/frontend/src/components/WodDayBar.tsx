@@ -61,7 +61,8 @@ export default ({ data }: WodDayBarProps) => (
             }}
             axisTop={null}
             axisRight={null}
-            axisBottom={{
+            axisBottom={null}
+            /* axisBottom={{
                 tickSize: 5,
                 tickPadding: 5,
                 tickRotation: -45,
@@ -69,7 +70,7 @@ export default ({ data }: WodDayBarProps) => (
                 legendPosition: 'middle',
                 legendOffset: 55,
                 truncateTickAt: 0
-            }}
+            }} */
             axisLeft={{
                 tickSize: 5,
                 tickPadding: 5,

@@ -1,6 +1,6 @@
-import { Alert, Col, Divider, Empty, Row, Skeleton, Space, Statistic, Typography } from 'antd';
+import { Alert, Col, Divider, Empty, Row, Space, Statistic, Typography } from 'antd';
 import { useEffect, useState } from "react";
-import { getDateString } from '../utils';
+import { getDateString } from '../services/dateService';
 import WodDayBar, { WodDayDataItem } from "./WodDayBar";
 
 export interface Wod {
@@ -50,10 +50,9 @@ export default ({ type, date, country }: WodDayBarDataProps) => {
             });
     }, [type, date, country]);
 
-
     if (error) return <Alert message={error} type="error" />;
 
-    if (loading) return <Skeleton paragraph={{ rows: 8 }} style={{ height: 220 }} />;
+    // if (loading) return <Skeleton paragraph={{ rows: 8 }} style={{ height: 220 }} />;
 
     const countryCount = country ? data?.data?.reduce((x, i) => x + i.male + i.female, 0) : undefined;
 

@@ -39,5 +39,15 @@ namespace C2Stats.Controllers
 
 			return Ok(result);
 		}
+		
+		[HttpGet]
+		public async Task<IActionResult> WodItems(string type, DateTime? date, string? country, CancellationToken cancellationToken)
+		{
+			var day = DateOnly.FromDateTime(date ?? DateTime.UtcNow);
+			
+			var result = await wodStatsService.GetWodItems(type, day, country, cancellationToken);
+
+			return Ok(result);
+		}
 	}
 }
