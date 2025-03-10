@@ -57,8 +57,8 @@ export default ({ type, date, country }: WodDayBarDataProps) => {
 
     const countryCount = country ? data?.data?.reduce((x, i) => x + i.male + i.female, 0) : undefined;
 
-    return <>
-        {data.wod ? <Row gutter={16}>
+    return (<>
+        {data.wod ? (<Row gutter={16}>
             <Col span={20}>
                 <Space direction="vertical" style={{ marginLeft: 40, marginRight: 40 }}>
                     <Typography.Title level={5} style={{ marginTop: 0 }}>{`${date?.toDateString()}`}</Typography.Title>
@@ -73,8 +73,8 @@ export default ({ type, date, country }: WodDayBarDataProps) => {
                     {country ? <Statistic title={country} value={countryCount} style={{ minWidth: 60 }} /> : null}
                 </Space>
             </Col>
-        </Row> : null}
+        </Row>) : null}
 
         {(data.data && data.data.length > 0) ? <WodDayBar data={data.data} /> : <Empty />}
-    </>;
+    </>);
 };

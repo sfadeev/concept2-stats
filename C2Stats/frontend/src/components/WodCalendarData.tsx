@@ -1,4 +1,4 @@
-import { Skeleton } from "antd";
+import { Alert, Skeleton } from "antd";
 import { useEffect, useState } from "react";
 import WodCalendar, { WodCalendarProps } from "./WodCalendar";
 
@@ -11,39 +11,41 @@ export interface WodCalendarDataProps {
 
 export default ({ type, year, country, onClick }: WodCalendarDataProps) => {
 
+    const [loading, setLoading] = useState<boolean>(false);
     const [data, setData] = useState<WodCalendarProps | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+
+        setLoading(true);
+
         fetch(`/api/wod/year?type=${type}&year=${year}&country=${country || ''}`)
             .then(response => {
-                if (!response.ok) {
-                    throw new Error('Failed to fetch data');
-                }
-                return response.json();
+                if (response.ok) return response.json();
+                throw new Error(`${response.statusText} (${response.status})`);
             })
             .then(data => {
                 setData(data);
+                setLoading(false);
+                return setError(null);
             })
-            .catch(err => setError('Error fetching data'));
+            .catch(e => {
+                setData(null);
+                setLoading(false);
+                return setError(e.message);
+            });
     }, [type, year, country]);
 
-    return (
-        <>
-            {error ? (
-                <p style={{ color: 'red' }}>{error}</p>
-            ) : (
-                data ? (
-                    <WodCalendar
-                        from={data.from}
-                        to={data.to}
-                        data={data.data}
-                        onClick={(d, x) => { return (onClick ? onClick(d, x) : null); }}
-                    />
-                ) : (
-                    <Skeleton title={false} paragraph={{ rows: 4 }} style={{ width: 680, height: 170 }} />
-                )
-            )}
-        </>
-    );
+    if (error) return <Alert message={error} type="error" />;
+
+    if (loading) return <Skeleton title={false} paragraph={{ rows: 4 }} style={{ width: 680, height: 170 }} />;
+
+    return (<>
+        {data ? (<WodCalendar
+            from={data.from}
+            to={data.to}
+            data={data.data}
+            onClick={(d, x) => { return (onClick ? onClick(d, x) : null); }}
+        />) : null}
+    </>);
 };

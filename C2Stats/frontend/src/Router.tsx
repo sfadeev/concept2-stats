@@ -1,24 +1,12 @@
-import React from 'react';
-import { Link, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Home from './pages/Home';
 
-const AppRouter: React.FC = () => {
+export default () => {
     return (
-        <Router>
-            <nav style={{ display: 'none' }}>
-                <ul>
-                    <li><Link to="/">Home</Link></li>
-                    <li><Link to="/about">About</Link></li>
-                </ul>
-            </nav>
-
+        <BrowserRouter>
             <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/:qdate/" element={<Home />} />
-                <Route path="/:qdate/:qtype" element={<Home />} />
+                <Route path="/:qdate?/:qtype?" element={<Home />} />
             </Routes>
-        </Router>
+        </BrowserRouter>
     );
 };
-
-export default AppRouter;
