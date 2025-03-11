@@ -1,18 +1,19 @@
+using C2Stats.Models;
+using Microsoft.Extensions.Options;
 using Quartz;
 
 namespace C2Stats.Services.Jobs
 {
 	[DisallowConcurrentExecution]
-	public class DownloadYesterdayWodJob(ILogger<DownloadYesterdayWodJob> logger,
+	public class DownloadYesterdayWodJob(ILogger<DownloadYesterdayWodJob> logger, IOptions<AppOptions> appOptions,
 		IHealthcheckService healthcheckService, IWodFileStorage wodFileStorage) 
 		: AbstractJob(logger, healthcheckService)
 	{
-		// number of yesterdays to re-download - in case some devices were offline and submitted logs later
-		private const int MaxDayCount = 7;
-		
 		protected override async Task ExecuteAsync(CancellationToken cancellationToken)
 		{
-			var dates = Enumerable.Range(1, MaxDayCount)
+			var options = appOptions.Value;
+			
+			var dates = Enumerable.Range(1, options.DownloadYesterdayDays)
 				.Select(i => DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-i))
 				.ToList();
 			

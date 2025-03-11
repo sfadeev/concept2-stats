@@ -1,9 +1,11 @@
+using C2Stats.Models;
+using Microsoft.Extensions.Options;
 using Quartz;
 
 namespace C2Stats.Services.Jobs
 {
 	[DisallowConcurrentExecution]
-	public class DownloadArchiveWodJob(ILogger<DownloadArchiveWodJob> logger,
+	public class DownloadArchiveWodJob(ILogger<DownloadArchiveWodJob> logger, IOptions<AppOptions> appOptions,
 		IHealthcheckService healthcheckService, IWodFileStorage wodFileStorage) 
 		: AbstractJob(logger, healthcheckService)
 	{
@@ -13,8 +15,10 @@ namespace C2Stats.Services.Jobs
 
 		protected override async Task ExecuteAsync(CancellationToken cancellationToken)
 		{
+			var options = appOptions.Value;
+			
 			// begin from day before yesterday - current date will be downloaded by other jobs
-			var now = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-2);
+			var now = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-options.DownloadArchiveDaysFrom);
 			
 			var errorsCount = 0;
 			
