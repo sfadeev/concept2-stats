@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using C2Stats.Entities;
 using C2Stats.Models;
 using LinqToDB;
@@ -65,8 +66,11 @@ namespace C2Stats.Services
 	{
 		public int? No { get; set; }
 		
+		[JsonIgnore]
+		[JsonPropertyName("pid")]
 		public int? ProfileId { get; set; }
 		
+		[JsonPropertyName("pos")]
 		public int? Position { get; set; }
 
 		public string? Name { get; set; }
@@ -75,20 +79,27 @@ namespace C2Stats.Services
 		
 		public int? Age { get; set; }
 
+		[JsonPropertyName("loc")]
 		public string? Location { get; set; }
 
+		[JsonPropertyName("ctry")]
 		public string? Country { get; set; }
 		
 		public string? Affiliation { get; set; }
 
+		[JsonIgnore]
 		public TimeSpan? ResultTime { get; set; }
 		
+		[JsonPropertyName("resTF")]
 		public string? ResultTimeFmt { get; set; }
 
+		[JsonPropertyName("resM")]
 		public int? ResultMeters { get; set; }
 
+		[JsonIgnore]
 		public TimeSpan? Pace { get; set; }
 		
+		[JsonPropertyName("paceF")]
 		public string? PaceFmt { get; set; }
 	}
 	
@@ -185,6 +196,8 @@ namespace C2Stats.Services
 
 				if (wod != null)
 				{
+					wod.Url = $"https://log.concept2.com/wod/{wod.Date:yyyy-MM-dd}/{wod.Type}";
+					
 					var query = from wi in db.GetTable<DbWodItem>()
 						join p in db.GetTable<DbProfile>() on wi.ProfileId equals p.Id
 						where wi.WodId == wod.Id && wi.Pace.HasValue && (country == null || p.Country == country)
@@ -270,11 +283,8 @@ namespace C2Stats.Services
 						return null;
 					};
 					
-					for (var index = 0; index < data.Count; index++)
+					foreach (var item in data)
 					{
-						var item = data[index];
-						
-						item.No = index + 1;
 						item.ResultTimeFmt = formatTimeSpan(item.ResultTime);
 						item.PaceFmt = formatTimeSpan(item.Pace);
 					}

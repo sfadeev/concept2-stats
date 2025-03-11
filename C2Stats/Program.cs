@@ -1,7 +1,9 @@
+using System.Text.Json.Serialization;
 using C2Stats.Models;
 using C2Stats.Services;
 using C2Stats.Services.Jobs;
 using LinqToDB.Data;
+using Microsoft.AspNetCore.Mvc;
 using Quartz;
 using Serilog;
 using Serilog.Extensions.Logging;
@@ -32,6 +34,12 @@ namespace C2Stats
 					.Configure<AppriseOptions>()
 					.Configure<HealthcheckIoOptions>();
 
+				builder.Services.Configure<JsonOptions>(options =>
+				{
+					options.JsonSerializerOptions.WriteIndented = false;
+					options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault;
+				});
+				
 				builder.Services
 					.AddSerilog((services, lc) => lc
 						.ReadFrom.Configuration(builder.Configuration)
@@ -73,7 +81,13 @@ namespace C2Stats
 					})
 					.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
-				builder.Services.AddControllersWithViews();
+				builder.Services
+					.AddControllers()
+					.AddJsonOptions(options =>
+					{
+						options.JsonSerializerOptions.WriteIndented = false;
+						options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault;
+					});
 				
 				/*builder.Services.AddSpaStaticFiles(config => // ???
 				{

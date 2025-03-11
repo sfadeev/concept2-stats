@@ -38,8 +38,6 @@ export default ({ type, year, country, onClick }: WodCalendarDataProps) => {
 
     if (error) return <Alert message={error} type="error" />;
 
-    // if (loading) return <Skeleton title={false} paragraph={{ rows: 4 }} style={{ width: 680, height: 170 }} />;
-
     return (<>
         {data ? (<WodCalendar
             from={data.from}

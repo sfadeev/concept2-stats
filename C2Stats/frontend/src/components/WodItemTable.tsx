@@ -11,18 +11,18 @@ export interface WodItemTableProps {
 
 export interface WodItem {
     no: number;
-    profileId: number;
-    position: number;
+    pid: number;
+    pos: number;
     name: string;
     sex: string;
     age: number;
-    location: string;
-    country: string;
-    resultTime: any;
-    resultTimeFmt: string;
-    resultMeters: number;
+    loc: string;
+    ctry: string;
+    resT: any;
+    resTF: string;
+    resM: number;
     pace: any;
-    paceFmt: string;
+    paceF: string;
 }
 
 const WodItemTable = ({ type, date, country }: WodItemTableProps) => {
@@ -54,10 +54,9 @@ const WodItemTable = ({ type, date, country }: WodItemTableProps) => {
 
     if (error) return <Alert message={error} type="error" />;
 
-    // if (loading) return <Skeleton paragraph={{ rows: 8 }} style={{ height: 220 }} />;
-
-    const resultTimeHidden = data.every(x => x.resultTime == null);
-    const resultMetersHidden = data.every(x => x.resultMeters == null);
+    data.forEach((x, index) => x.no = index + 1);
+    const resultTimeHidden = data.every(x => x.resTF == null);
+    const resultMetersHidden = data.every(x => x.resM == null);
 
     const columns: ColumnType[] = [
         {
@@ -66,7 +65,7 @@ const WodItemTable = ({ type, date, country }: WodItemTableProps) => {
         },
         {
             title: 'Pos.',
-            dataIndex: 'position'
+            dataIndex: 'pos'
         },
         {
             title: 'Name',
@@ -78,34 +77,33 @@ const WodItemTable = ({ type, date, country }: WodItemTableProps) => {
         },
         {
             title: 'Location',
-            dataIndex: 'location',
+            dataIndex: 'loc',
         },
         {
             title: 'Country',
-            dataIndex: 'country',
+            dataIndex: 'ctry',
         },
         {
-            title: 'Result',
-            dataIndex: 'resultTimeFmt',
+            title: 'Result, time',
+            dataIndex: 'resTF',
             hidden: resultTimeHidden
         },
         {
-            title: 'Result',
-            dataIndex: 'resultMeters',
+            title: 'Result, m',
+            dataIndex: 'resM',
             hidden: resultMetersHidden
         },
         {
             title: 'Pace',
-            dataIndex: 'paceFmt',
+            dataIndex: 'paceF',
         }
     ];
 
     return (<>
         <Table
             loading={loading}
-            rowKey={'profileId'}
+            rowKey={'no'}
             size={'small'}
-            // pagination={{ pageSize: 50 }}
             dataSource={data}
             columns={columns}
         />

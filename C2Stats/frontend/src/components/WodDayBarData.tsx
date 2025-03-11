@@ -1,3 +1,4 @@
+import { LinkOutlined } from '@ant-design/icons';
 import { Alert, Col, Divider, Empty, Row, Space, Statistic, Typography } from 'antd';
 import { useEffect, useState } from "react";
 import { getDateString } from '../services/dateService';
@@ -8,6 +9,7 @@ export interface Wod {
     type?: string;
     date?: Date;
     name?: string;
+    url?: string;
     description?: string;
     totalCount?: number;
 }
@@ -52,17 +54,16 @@ export default ({ type, date, country }: WodDayBarDataProps) => {
 
     if (error) return <Alert message={error} type="error" />;
 
-    // if (loading) return <Skeleton paragraph={{ rows: 8 }} style={{ height: 220 }} />;
-
-    const countryCount = country ? data?.data?.reduce((x, i) => x + i.male + i.female, 0) : undefined;
+    const countryCount = country ? data?.data?.reduce((x, i) => x + (i.male || 0) + (i.female || 0), 0) : undefined;
 
     return (<>
         {data.wod ? (<Row gutter={16}>
             <Col span={20}>
                 <Space direction="vertical" style={{ marginLeft: 40, marginRight: 40 }}>
                     <Typography.Title level={5} style={{ marginTop: 0 }}>{`${date?.toDateString()}`}</Typography.Title>
-                    <Typography.Text strong>{data.wod?.name}</Typography.Text>
-                    <Typography.Text type="secondary">{data.wod?.description}</Typography.Text>
+                    <Typography.Text strong>{data.wod.name}</Typography.Text>
+                    <Typography.Link href={data.wod.url} target="_blank"><LinkOutlined /> {data.wod.url} </Typography.Link>
+                    <Typography.Text type="secondary">{data.wod.description}</Typography.Text>
                 </Space>
             </Col>
             <Col span={4}>
