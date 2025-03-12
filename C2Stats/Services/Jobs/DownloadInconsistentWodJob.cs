@@ -1,12 +1,14 @@
 using C2Stats.Entities;
+using C2Stats.Models;
 using LinqToDB;
 using LinqToDB.Data;
+using Microsoft.Extensions.Options;
 using Quartz;
 
 namespace C2Stats.Services.Jobs
 {
 	[DisallowConcurrentExecution]
-	public class DownloadInconsistentWodJob(ILogger<DownloadInconsistentWodJob> logger,
+	public class DownloadInconsistentWodJob(ILogger<DownloadInconsistentWodJob> logger, IOptions<AppOptions> appOptions,
 		IHealthcheckService healthcheckService, IWodFileStorage wodFileStorage) : AbstractJob(logger, healthcheckService)
 	{
 		protected override async Task ExecuteAsync(CancellationToken cancellationToken)
@@ -15,7 +17,8 @@ namespace C2Stats.Services.Jobs
 
 			if (logger.IsEnabled(LogLevel.Debug))
 			{
-				logger.LogDebug("Inconsistent by TotalCount WoDs ({Count}) {WoDs}", wods.Count, wods);
+				logger.LogDebug("Inconsistent by TotalCount WoDs ({Count}) {WoDs}",
+					wods.Count, wods.Select(x => new { x.Date, x.Type, x.TotalCount, x.WodItemCount }));
 			}
 			
 			foreach (var wod in wods)
@@ -41,8 +44,12 @@ namespace C2Stats.Services.Jobs
 		/// </summary>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		private static async Task<ICollection<InconsistentByTotalCount>> GetInconsistentByTotalCount(CancellationToken cancellationToken)
+		private async Task<ICollection<InconsistentByTotalCount>> GetInconsistentByTotalCount(CancellationToken cancellationToken)
 		{
+			var options = appOptions.Value;
+
+			var notAfter = DateOnly.FromDateTime(DateTime.Today).AddDays(-options.DownloadYesterdayDays);
+			
 			using (var db = new DataConnection())
 			{
 				var query =
@@ -52,7 +59,7 @@ namespace C2Stats.Services.Jobs
 						into wig
 						select new { WodId = wig.Key, WodItemCount = wig.Count() }
 						on w.Id equals wig.WodId
-					where w.TotalCount != wig.WodItemCount
+					where w.Date <= notAfter && w.TotalCount != wig.WodItemCount
 					orderby w.Id descending
 					select new InconsistentByTotalCount
 					{
