@@ -45,7 +45,7 @@ namespace C2Stats.Services
 				{
 					await db.GetTable<DbWod>().MergeOnPrimaryKey([dbWod], cancellationToken);
 					
-					var result = await db.GetTable<DbWodItem>().MergeWithDeleteOnPrimaryKey(dbWodItems, cancellationToken);
+					var result = await db.GetTable<DbWodItem>().MergeOnPrimaryKey(dbWodItems, cancellationToken);
 					
 					if (logger.IsEnabled(LogLevel.Information))
 					{
