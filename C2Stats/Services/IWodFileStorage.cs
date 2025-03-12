@@ -12,6 +12,8 @@ namespace C2Stats.Services
 	{
 		Task DownloadAndStoreActual(DateOnly date, CancellationToken cancellationToken);
 		
+		Task DownloadAndStoreActual(DateOnly date, string[] wodTypes, CancellationToken cancellationToken);
+		
 		Task DownloadAndStoreIfNotExists(DateOnly date, CancellationToken cancellationToken);
 		
 		Task<ICollection<WodFileInfo>> GetWodFiles(CancellationToken cancellationToken);
@@ -43,12 +45,17 @@ namespace C2Stats.Services
 
 		public Task DownloadAndStoreActual(DateOnly date, CancellationToken cancellationToken)
 		{
-			return DownloadAndStoreInParallel(date, true, cancellationToken);
+			return DownloadAndStoreInParallel(date, DownloadedWodTypes, true, cancellationToken);
+		}
+
+		public Task DownloadAndStoreActual(DateOnly date, string[] wodTypes, CancellationToken cancellationToken)
+		{
+			return DownloadAndStoreInParallel(date, wodTypes, true, cancellationToken);
 		}
 
 		public Task DownloadAndStoreIfNotExists(DateOnly date, CancellationToken cancellationToken)
 		{
-			return DownloadAndStoreInParallel(date, false, cancellationToken);
+			return DownloadAndStoreInParallel(date, DownloadedWodTypes, false, cancellationToken);
 		}
 
 		public Task<ICollection<WodFileInfo>> GetWodFiles(CancellationToken cancellationToken)
@@ -93,10 +100,9 @@ namespace C2Stats.Services
 			return wod!;
 		}
 
-		private async Task DownloadAndStoreInParallel(DateOnly date, bool overwriteIfExists, CancellationToken cancellationToken)
+		private async Task DownloadAndStoreInParallel(DateOnly date, string[] wodTypes, bool overwriteIfExists, CancellationToken cancellationToken)
 		{
-			var tasks = DownloadedWodTypes
-				.Select(x => DownloadAndStoreInternal(date, x, overwriteIfExists, cancellationToken));
+			var tasks = wodTypes.Select(x => DownloadAndStoreInternal(date, x, overwriteIfExists, cancellationToken));
 				
 			await Task.WhenAll(tasks);
 		}

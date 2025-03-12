@@ -77,6 +77,7 @@ namespace C2Stats
 						quartz
 							.AddJob<DownloadCurrentWodJob>(logger, builder.Configuration)
 							.AddJob<DownloadYesterdayWodJob>(logger, builder.Configuration)
+							.AddJob<DownloadInconsistentWodJob>(logger, builder.Configuration)
 							.AddJob<DownloadArchiveWodJob>(logger, builder.Configuration);
 					})
 					.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
