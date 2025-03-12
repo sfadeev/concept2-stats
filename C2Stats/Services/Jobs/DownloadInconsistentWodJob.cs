@@ -15,8 +15,7 @@ namespace C2Stats.Services.Jobs
 
 			if (logger.IsEnabled(LogLevel.Debug))
 			{
-				logger.LogDebug("Inconsistent by TotalCount WoDs ({Count}) {WoDs}",
-					wods.Count, wods.Select(x => new { x.Date, x.Type }));
+				logger.LogDebug("Inconsistent by TotalCount WoDs ({Count}) {WoDs}", wods.Count, wods);
 			}
 			
 			foreach (var wod in wods)
@@ -37,9 +36,13 @@ namespace C2Stats.Services.Jobs
 			}
 		}
 
-		private static async Task<ICollection<DbWod>> GetInconsistentByTotalCount(CancellationToken cancellationToken)
+		/// <summary>
+		/// WoD total count not equal count if WoD items
+		/// </summary>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		private static async Task<ICollection<InconsistentByTotalCount>> GetInconsistentByTotalCount(CancellationToken cancellationToken)
 		{
-			// WoD total count not equal count if WoD items
 			using (var db = new DataConnection())
 			{
 				var query =
@@ -50,10 +53,28 @@ namespace C2Stats.Services.Jobs
 						select new { WodId = wig.Key, WodItemCount = wig.Count() }
 						on w.Id equals wig.WodId
 					where w.TotalCount != wig.WodItemCount
-					select w;
+					orderby w.Id descending
+					select new InconsistentByTotalCount
+					{
+						Date = w.Date,
+						Type = w.Type,
+						TotalCount = w.TotalCount,
+						WodItemCount = wig.WodItemCount
+					};
 
 				return await query.ToListAsync(cancellationToken);
 			}
+		}
+
+		private class InconsistentByTotalCount
+		{
+			public DateOnly Date { get; set; }
+			
+			public string? Type { get; set; }
+			
+			public int? TotalCount { get; set; }
+			
+			public int WodItemCount { get; set; }
 		}
 	}
 }
