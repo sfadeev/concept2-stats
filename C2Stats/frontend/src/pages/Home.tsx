@@ -1,4 +1,5 @@
-import { Card, DatePicker, Segmented, Space } from 'antd';
+import { DoubleLeftOutlined, DoubleRightOutlined } from '@ant-design/icons';
+import { Button, Card, DatePicker, Segmented, Space } from 'antd';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -24,6 +25,12 @@ const HomePage = () => {
         navigate(`/${getDateString(date)}/${type}`);
     };
 
+    const goToDate = (num: number) => {
+        const d = date ?? new Date();
+        d.setDate(d.getDate() + num);
+        go(d, type);
+    };
+
     let { qdate, qtype } = useParams<HomeParams>();
 
     useEffect(() => {
@@ -42,12 +49,16 @@ const HomePage = () => {
 
     return (<>
         <Space>
-            <DatePicker
-                id='date'
-                allowClear={false}
-                value={date ? dayjs(date) : null}
-                onChange={(date, _dateString) => go(date.toDate(), type)}
-            />
+            <Space size={4}>
+                <Button icon={<DoubleLeftOutlined />} onClick={() => goToDate(-1)} />
+                <DatePicker
+                    id='date'
+                    allowClear={false}
+                    value={date ? dayjs(date) : null}
+                    onChange={(d, _) => go(d.toDate(), type)}
+                />
+                <Button icon={<DoubleRightOutlined />} onClick={() => goToDate(1)} />
+            </Space>
 
             <Segmented<string>
                 value={type}

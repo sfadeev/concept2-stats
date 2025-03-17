@@ -61,41 +61,49 @@ const WodItemTable = ({ type, date, country }: WodItemTableProps) => {
     const columns: ColumnType[] = [
         {
             title: 'No.',
-            dataIndex: 'no'
+            dataIndex: 'no',
+            width: 30
         },
         {
             title: 'Pos.',
-            dataIndex: 'pos'
+            dataIndex: 'pos',
+            width: 30
         },
         {
             title: 'Name',
-            dataIndex: 'name',
+            dataIndex: 'name'
         },
         {
             title: 'Age',
             dataIndex: 'age',
+            align: 'right'
         },
         {
             title: 'Location',
-            dataIndex: 'loc',
+            dataIndex: 'loc'
         },
         {
             title: 'Country',
             dataIndex: 'ctry',
+            align: 'center',
+            width: 100
         },
         {
             title: 'Result, time',
             dataIndex: 'resTF',
+            align: 'right',
             hidden: resultTimeHidden
         },
         {
             title: 'Result, m',
             dataIndex: 'resM',
+            align: 'right',
             hidden: resultMetersHidden
         },
         {
             title: 'Pace',
             dataIndex: 'paceF',
+            align: 'right'
         }
     ];
 
