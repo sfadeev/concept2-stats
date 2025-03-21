@@ -20,13 +20,16 @@ const setLocalStorageProfile = (profile: Profile | null): void => {
     else localStorage.removeItem('profile');
 };
 
-export default () => {
+export default ({ onChange }: ProfileSelectorProps) => {
 
     const [profile, setProfile] = useState<Profile | null>(getLocalStorageProfile);
     const [options, setOptions] = useState<AutoCompleteProps['options']>([]);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => setLocalStorageProfile(profile), [profile]);
+    useEffect(() => {
+        onChange(profile?.id);
+        return setLocalStorageProfile(profile);
+    }, [profile]);
 
     const onSearch = (value: string) => {
         fetch(`/api/wod/profiles?search=${value}`)
@@ -53,8 +56,14 @@ export default () => {
             options={options}
             style={{ width: 205 }}
             onSearch={onSearch}
-            onSelect={(value: string, profile: any) => setProfile({ id: profile.key, name: profile.value })}
-            onClear={() => setProfile(null)}
+            onSelect={(value: string, profile: any) => {
+                onChange(profile.key);
+                return setProfile({ id: profile.key, name: profile.value });
+            }}
+            onClear={() => {
+                onChange(undefined);
+                return setProfile(null);
+            }}
         />
     </>);
 

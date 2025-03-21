@@ -10,7 +10,7 @@ export interface WodCalendarProps {
 // https://nivo.rocks/calendar/
 export default ({ from, to, data, onClick }: WodCalendarProps) => (
 
-    <div style={{ width: 720, height: 170 }}>
+    <div style={{ width: 820, height: 150 }}>
 
         <ResponsiveCalendar
             data={data ?? []}
@@ -20,7 +20,7 @@ export default ({ from, to, data, onClick }: WodCalendarProps) => (
             onClick={(d, x) => { return (onClick ? onClick(d.date, x) : null); }}
             emptyColor="#eeeeee"
             colors={['#61cdbb', '#97e3d5', '#e8c1a0', '#f47560']}
-            margin={{ top: 40, right: 40, bottom: 40, left: 40 }}
+            margin={{ top: 10, right: 40, bottom: 10, left: 40 }}
             yearSpacing={30}
             yearLegendOffset={20}
             monthBorderColor="#ffffff"

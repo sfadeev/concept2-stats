@@ -28,7 +28,7 @@ namespace C2Stats.Tests.Services
 			var service = new WodStatsService();
 			
 			// act
-			var result = await service.GetYear(WodType.RowErg, 2025, country, cancellationToken);
+			var result = await service.GetYear(DataScope.World, WodType.RowErg, 2025, country, null, cancellationToken);
 			
 			// assert
 			Assert.That(result, Is.Not.Null);

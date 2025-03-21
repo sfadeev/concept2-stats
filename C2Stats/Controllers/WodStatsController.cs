@@ -23,9 +23,9 @@ namespace C2Stats.Controllers
 		}
 		
 		[HttpGet]
-		public async Task<IActionResult> Year(string type, int year, string? country, CancellationToken cancellationToken)
+		public async Task<IActionResult> Year(DataScope scope, string type, int year, string? country, int? profileId, CancellationToken cancellationToken)
 		{
-			var result = await wodStatsService.GetYear(type, year, country, cancellationToken);
+			var result = await wodStatsService.GetYear(scope, type, year, country, profileId, cancellationToken);
 
 			return Ok(result);
 		}

@@ -12,11 +12,18 @@ namespace C2Stats.Services
 		
 		Task<IEnumerable<CountryDatum>> GetCountries(string type, int year, CancellationToken cancellationToken);
 		
-		Task<CalendarData> GetYear(string type, int year, string? country, CancellationToken cancellationToken);
+		Task<CalendarData> GetYear(DataScope scope, string type, int year, string? country, int? profileId, CancellationToken cancellationToken);
 		
 		Task<DayData?> GetDay(string type, DateOnly day, string? country, CancellationToken cancellationToken);
 		
 		Task<IEnumerable<WodItem>> GetWodItems(string type, DateOnly day, string? country, CancellationToken cancellationToken);
+	}
+
+	public enum DataScope : byte
+	{
+		World = 0,
+		Country = 1,
+		Profile = 2,
 	}
 	
 	public class CountryDatum
@@ -145,26 +152,41 @@ namespace C2Stats.Services
 			}
 		}
 
-		public async Task<CalendarData> GetYear(string type, int year, string? country, CancellationToken cancellationToken)
+		public async Task<CalendarData> GetYear(DataScope scope, string type, int year, string? country, int? profileId, CancellationToken cancellationToken)
 		{
 			using (var db = new DataConnection())
 			{
 				var beginDate = new DateOnly(year, 1, 1);
 				var endDate = new DateOnly(year, 12, 31);
 
-				var query = from g in
+				CalendarDatum[] data;
+
+				if (scope == DataScope.World)
+				{
+					var query =
 						from w in db.GetTable<DbWod>()
-						join wi in db.GetTable<DbWodItem>() on w.Id equals wi.WodId
-						join p in db.GetTable<DbProfile>() on wi.ProfileId equals p.Id
 						where w.Date >= beginDate && w.Date <= endDate && w.Type == type
-						      && (country == null || p.Country == country)
-						group w by w.Id
-						into g
-						select new { Id = g.Key, Count = g.Count() }
-					join w in db.GetTable<DbWod>() on g.Id equals w.Id
-					select new CalendarDatum { Day = w.Date, Value = g.Count };
+						select new CalendarDatum { Day = w.Date, Value = w.TotalCount };
 				
-				var data = await query.ToArrayAsync(cancellationToken);
+					data = await query.ToArrayAsync(cancellationToken);
+				}
+				else
+				{
+					var query = from g in
+							from w in db.GetTable<DbWod>()
+							join wi in db.GetTable<DbWodItem>() on w.Id equals wi.WodId
+							join p in db.GetTable<DbProfile>() on wi.ProfileId equals p.Id
+							where w.Date >= beginDate && w.Date <= endDate && w.Type == type
+							      && ((scope == DataScope.Country && p.Country == country) ||
+							          (scope == DataScope.Profile && p.Id == profileId))
+							group w by w.Id
+							into g
+							select new { Id = g.Key, Count = g.Count() }
+						join w in db.GetTable<DbWod>() on g.Id equals w.Id
+						select new CalendarDatum { Day = w.Date, Value = g.Count };
+				
+					data = await query.ToArrayAsync(cancellationToken);
+				}
 				
 				var result = new CalendarData
 				{

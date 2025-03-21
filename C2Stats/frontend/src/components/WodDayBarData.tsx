@@ -68,13 +68,13 @@ export default ({ type, date, country }: WodDayBarDataProps) => {
             </Col>
             <Col span={4}>
                 <Space>
-                    <Statistic title={`Total\u00A0People`} value={data.wod?.totalCount || ''} />
+                    <Statistic loading={loading} title={`Total\u00A0People`} value={data.wod?.totalCount || ''} />
                     <Divider />
-                    {country ? <Statistic title={country} value={countryCount} style={{ minWidth: 60 }} /> : null}
+                    {country ? <Statistic loading={loading} title={country} value={countryCount} style={{ minWidth: 60 }} /> : null}
                 </Space>
             </Col>
         </Row>) : null}
 
-        {(data.data && data.data.length > 0) ? <WodDayBar data={data.data} /> : <Empty />}
+        {(data.data && data.data.length > 0) ? <WodDayBar data={data.data} /> : <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />}
     </>);
 };

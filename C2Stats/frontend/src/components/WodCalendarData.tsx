@@ -6,10 +6,12 @@ export interface WodCalendarDataProps {
     type: string;
     year: number;
     country?: string | null;
+    profileId?: number | null;
+    scope?: string | null;
     onClick?: ((date: Date, event: React.MouseEvent<SVGRectElement, MouseEvent>) => void) | undefined;
 }
 
-export default ({ type, year, country, onClick }: WodCalendarDataProps) => {
+export default ({ type, year, country, profileId, scope, onClick }: WodCalendarDataProps) => {
 
     const [loading, setLoading] = useState<boolean>(false);
     const [data, setData] = useState<WodCalendarProps | null>(null);
@@ -19,7 +21,16 @@ export default ({ type, year, country, onClick }: WodCalendarDataProps) => {
 
         setLoading(true);
 
-        fetch(`/api/wod/year?type=${type}&year=${year}&country=${country || ''}`)
+        const url = new URL("/api/wod/year", window.location.origin);
+
+        url.searchParams.append('type', type);
+        url.searchParams.append('year', year.toString());
+
+        if (country) url.searchParams.append('country', country);
+        if (profileId) url.searchParams.append('profileId', profileId.toString());
+        if (scope) url.searchParams.append('scope', scope);
+
+        fetch(url)
             .then(response => {
                 if (response.ok) return response.json();
                 throw new Error(`${response.statusText} (${response.status})`);
@@ -34,7 +45,7 @@ export default ({ type, year, country, onClick }: WodCalendarDataProps) => {
                 setLoading(false);
                 return setError(e.message);
             });
-    }, [type, year, country]);
+    }, [type, year, country, profileId, scope]);
 
     if (error) return <Alert message={error} type="error" />;
 
